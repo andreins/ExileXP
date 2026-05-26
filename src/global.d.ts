@@ -5,6 +5,7 @@ declare global {
 		overlay?: {
 			setClickThrough: (value: boolean) => Promise<boolean>;
 			onClickThroughChanged: (callback: (value: boolean) => void) => () => void;
+			setWindowHeight: (height: number) => void;
 		};
 	}
 }

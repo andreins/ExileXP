@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import type { ActId } from "./types/guide";
 import { guide } from "./data/acts/index";
@@ -59,6 +59,7 @@ function App() {
 	});
 
 	const [clickThrough, setClickThrough] = useState(false);
+	const appRef = useRef<HTMLDivElement>(null);
 
 	const activeAct = useMemo(() => guide.find((a) => a.id === activeActId) ?? guide[0], [activeActId]);
 	const activeZoneIndex = activeZoneByAct[activeAct.id] ?? 0;
@@ -82,6 +83,17 @@ function App() {
 
 	useEffect(() => {
 		return window.overlay?.onClickThroughChanged((value) => setClickThrough(value));
+	}, []);
+
+	useEffect(() => {
+		const el = appRef.current;
+		if (!el) return;
+		const observer = new ResizeObserver((entries) => {
+			const h = entries[0].contentRect.height;
+			window.overlay?.setWindowHeight(Math.ceil(h));
+		});
+		observer.observe(el);
+		return () => observer.disconnect();
 	}, []);
 
 	const toggleTask = (id: string) => {
@@ -109,7 +121,7 @@ function App() {
 	};
 
 	return (
-		<div className="app">
+		<div className="app" ref={appRef}>
 			<OverlayHeader clickThrough={clickThrough} onToggleClickThrough={toggleClickThrough} />
 			<ActTabs acts={guide} activeActId={activeActId} onSelectAct={setActiveActId} />
 			<ProgressStrip zones={activeAct.zones} activeZoneIndex={activeZoneIndex} completed={completed} onZoneSelect={setZoneIndex} />

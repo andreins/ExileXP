@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain } from "electron";
+import { app, BrowserWindow, globalShortcut, ipcMain, screen } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -59,6 +59,15 @@ app.whenReady().then(() => {
 		} else {
 			win.show();
 		}
+	});
+
+	ipcMain.on("overlay:set-height", (_event, height: number) => {
+		if (!win) return;
+		const [width] = win.getSize();
+		const [, winY] = win.getPosition();
+		const { workArea } = screen.getPrimaryDisplay();
+		const maxH = workArea.y + workArea.height - winY - 8;
+		win.setSize(width, Math.min(Math.max(Math.ceil(height), 80), maxH));
 	});
 
 	ipcMain.handle("overlay:set-click-through", (_event, value: boolean) => {

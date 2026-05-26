@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld("overlay", {
 		return () => {
 			ipcRenderer.removeListener("overlay:click-through", handler);
 		};
-	}
+	},
+	setWindowHeight: (height: number) => ipcRenderer.send("overlay:set-height", height),
 });

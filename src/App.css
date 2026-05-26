@@ -38,7 +38,6 @@
 
 /* ── App shell ────────────────────────────────────────────── */
 .app {
-	height: 100vh;
 	display: flex;
 	flex-direction: column;
 	background: var(--bg-overlay);
@@ -208,9 +207,7 @@
 
 /* ── Guide main area ──────────────────────────────────────── */
 .guideMain {
-	flex: 1;
-	overflow-y: auto;
-	padding: 0;
+	overflow: visible;
 }
 
 .guideMain::-webkit-scrollbar {
