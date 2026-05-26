@@ -112,7 +112,7 @@ function App() {
 		<div className="app">
 			<OverlayHeader clickThrough={clickThrough} onToggleClickThrough={toggleClickThrough} />
 			<ActTabs acts={guide} activeActId={activeActId} onSelectAct={setActiveActId} />
-			<ProgressStrip zones={activeAct.zones} activeZoneIndex={activeZoneIndex} completed={completed} />
+			<ProgressStrip zones={activeAct.zones} activeZoneIndex={activeZoneIndex} completed={completed} onZoneSelect={setZoneIndex} />
 
 			<main className="guideMain">
 				{activeZone ? (

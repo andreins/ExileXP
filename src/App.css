@@ -38,12 +38,10 @@
 
 /* ── App shell ────────────────────────────────────────────── */
 .app {
-	height: calc(100vh - 16px);
-	margin: 8px;
+	height: 100vh;
 	display: flex;
 	flex-direction: column;
 	background: var(--bg-overlay);
-	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 	border-radius: var(--radius-lg);
 	overflow: hidden;
 	user-select: none;
@@ -164,15 +162,28 @@
 }
 
 .progressDot {
-	width: 8px;
-	height: 4px;
+	width: 10px;
+	height: 5px;
 	border-radius: 2px;
 	background: rgba(140, 128, 111, 0.25);
-	transition: background 0.2s;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	transition: background 0.15s, transform 0.1s;
+	flex-shrink: 0;
+}
+
+.progressDot:hover {
+	background: var(--text-gold-bright);
+	transform: scaleY(1.4);
 }
 
 .progressDot--done {
 	background: var(--accent-bronze);
+}
+
+.progressDot--done:hover {
+	background: var(--text-gold-bright);
 }
 
 .progressDot--active {
@@ -184,6 +195,15 @@
 	color: var(--text-muted);
 	white-space: nowrap;
 	letter-spacing: 0.04em;
+	min-width: 80px;
+	text-align: right;
+	transition: color 0.1s;
+}
+
+.progressLabel--zone {
+	color: var(--text-gold);
+	font-variant: small-caps;
+	letter-spacing: 0.06em;
 }
 
 /* ── Guide main area ──────────────────────────────────────── */
