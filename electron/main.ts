@@ -13,7 +13,7 @@ const isDev = !app.isPackaged;
 function createWindow() {
 	win = new BrowserWindow({
 		width: 460,
-		height: 780,
+		height: 390,
 		x: 40,
 		y: 80,
 		frame: false,
