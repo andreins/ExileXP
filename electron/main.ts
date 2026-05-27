@@ -84,6 +84,10 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+	if (process.platform === "win32") {
+		app.setAppUserModelId("com.exilexp.overlay");
+	}
+
 	createWindow();
 
 	// Client.txt tail — instantiate after window is created

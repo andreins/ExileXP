@@ -1,7 +1,18 @@
 {
   "name": "exilexp",
-  "private": true,
-  "version": "0.0.0",
+  "productName": "ExileXP",
+  "version": "0.1.0",
+  "description": "Path of Exile 2 leveling overlay — class profiles, skill gem guide, Client.txt zone autodetect.",
+  "author": {
+    "name": "Naean"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/Naean/ExileXP",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Naean/ExileXP.git"
+  },
+  "private": false,
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -10,13 +21,13 @@
     "dev:electron": "wait-on http://localhost:5173 && npm run build:electron && cross-env NODE_ENV=development electron .",
     "build:electron": "tsc -p electron/tsconfig.json",
     "build": "tsc -b && vite build && npm run build:electron",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dist": "npm run build && electron-builder --win portable --publish=never",
+    "dist:dir": "npm run build && electron-builder --win portable --dir"
   },
   "dependencies": {
-    "electron-store": "^11.0.2",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "zustand": "^5.0.13"
+    "react-dom": "^19.2.6"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
@@ -31,13 +42,43 @@
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "electron": "^42.2.0",
+    "electron-builder": "^26.8.1",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",
     "wait-on": "^9.0.10"
+  },
+  "build": {
+    "appId": "com.exilexp.overlay",
+    "productName": "ExileXP",
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "ExileXP-${version}-portable.exe"
+    },
+    "portable": {
+      "artifactName": "ExileXP-${version}-portable.exe"
+    }
   }
 }
