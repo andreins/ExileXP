@@ -7,9 +7,11 @@ type Props = {
 	autodetect: "on" | "off";
 	clientLogPath: string;
 	defaultClientLogPath: string;
+	currentZoneName: string | null;
 	onProfileChange: (p: ProfileId) => void;
 	onAutodetectChange: (v: "on" | "off") => void;
 	onClientLogPathChange: (p: string) => void;
+	onCatchUp: () => void;
 	onResetProfile: () => void;
 	onResetAll: () => void;
 };
@@ -19,9 +21,11 @@ export default function SettingsPanel({
 	autodetect,
 	clientLogPath,
 	defaultClientLogPath,
+	currentZoneName,
 	onProfileChange,
 	onAutodetectChange,
 	onClientLogPathChange,
+	onCatchUp,
 	onResetProfile,
 	onResetAll,
 }: Props) {
@@ -140,6 +144,13 @@ export default function SettingsPanel({
 		}
 	}
 
+	function handleCatchUp() {
+		const target = currentZoneName ? ` "${currentZoneName}"` : "";
+		if (!confirm(`Mark every task in every zone BEFORE${target} as complete? This is the quick way to record existing progress when you start using the overlay mid-campaign.`)) return;
+		onCatchUp();
+		showToast("Caught up to current zone");
+	}
+
 	function handleResetProfile() {
 		if (!confirm(`Reset all progress for the ${profile} profile?`)) return;
 		onResetProfile();
@@ -239,6 +250,19 @@ export default function SettingsPanel({
 				>
 					Import
 				</button>
+			</div>
+
+			{/* Catch up to current zone */}
+			<div className="settingsDivider" />
+			<div className="settingsRow settingsRow--column">
+				<button className="settingsActionBtn settingsActionBtn--full" onClick={handleCatchUp}>
+					Mark all tasks done up to current zone
+				</button>
+				<span className="settingsMuted">
+					{currentZoneName
+						? `Marks every task before "${currentZoneName}" as complete. Useful when you start the overlay mid-campaign.`
+						: "Marks every task before the active zone as complete."}
+				</span>
 			</div>
 
 			{/* Reset */}

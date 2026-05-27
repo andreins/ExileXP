@@ -220,6 +220,34 @@ function App() {
 		});
 	}, []);
 
+	// ── First-uncompleted-zone default ────────────────────────────────────
+	// On mount and on profile switch: if this profile has no saved active-zone
+	// state, jump to the first zone that still has unchecked tasks across all
+	// acts. After the user navigates, their last position is persisted normally.
+	useEffect(() => {
+		const savedZoneRaw = localStorage.getItem(getZoneByActKey(profile));
+		if (savedZoneRaw && savedZoneRaw !== "{}") return; // honor existing position
+
+		const savedProgressRaw = localStorage.getItem(getProgressKey(profile));
+		const progress: Record<string, boolean> = savedProgressRaw
+			? (JSON.parse(savedProgressRaw) as Record<string, boolean>)
+			: {};
+
+		for (const act of guide) {
+			for (let i = 0; i < act.zones.length; i++) {
+				const z = act.zones[i];
+				if (z.tasks.length === 0) continue;
+				const done = z.tasks.every((t) => progress[t.id]);
+				if (!done) {
+					setActiveActId(act.id);
+					setActiveZoneByAct((prev) => ({ ...prev, [act.id]: i }));
+					return;
+				}
+			}
+		}
+		// All zones complete — leave defaults alone.
+	}, [profile, guide]);
+
 	// ── Autodetect zone subscription ──────────────────────────────────────
 	useEffect(() => {
 		if (autodetect !== "on") return;
@@ -297,6 +325,29 @@ function App() {
 		await window.overlay?.setClientLogPath(p || null);
 	};
 
+	// Bulk-mark every task in every zone BEFORE the current zone as completed.
+	// Lets a user who's already mid-campaign record their existing progress in
+	// one click instead of ticking each zone manually.
+	const catchUpToHere = () => {
+		setCompleted((c) => {
+			const next = { ...c };
+			for (const act of guide) {
+				if (act.id === activeActId) {
+					// Same act: mark zones strictly before the active zone index.
+					for (let i = 0; i < activeZoneIndex; i++) {
+						for (const task of act.zones[i].tasks) next[task.id] = true;
+					}
+					break;
+				}
+				// Prior acts: mark every task in every zone.
+				for (const zone of act.zones) {
+					for (const task of zone.tasks) next[task.id] = true;
+				}
+			}
+			return next;
+		});
+	};
+
 	const handleResetProfile = () => {
 		localStorage.removeItem(getProgressKey(profile));
 		localStorage.removeItem(getZoneByActKey(profile));
@@ -328,9 +379,11 @@ function App() {
 					autodetect={autodetect}
 					clientLogPath={clientLogPath}
 					defaultClientLogPath={defaultClientLogPath}
+					currentZoneName={activeZone?.name ?? null}
 					onProfileChange={handleProfileChange}
 					onAutodetectChange={setAutodetect}
 					onClientLogPathChange={handleClientLogPathChange}
+					onCatchUp={catchUpToHere}
 					onResetProfile={handleResetProfile}
 					onResetAll={handleResetAll}
 				/>
