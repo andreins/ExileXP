@@ -2,9 +2,30 @@
 
 A Path of Exile 2 leveling overlay — class profiles, skill gem guide, and Client.txt zone autodetect.
 
-![screenshot](docs/screenshot.png)
+<p align="center">
+  <img src="docs/images/hero.png" alt="ExileXP overlay during Act 1" width="420">
+</p>
 
-> _Screenshot coming soon. Drop one in `docs/screenshot.png` before tagging the first GitHub release._
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/overlay-zone.png" alt="Zone view"></td>
+    <td width="50%"><img src="docs/images/overlay-gems.png" alt="Skill Gems panel"></td>
+  </tr>
+  <tr>
+    <td>Monk profile, Act 1 — tasks for the current zone with target level and league rewards.</td>
+    <td>Per-act Skill Gems panel: skill + support gems with mapping / bossing notes.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/settings.png" alt="Settings"></td>
+    <td><img src="docs/images/autodetect.png" alt="Zone autodetect"></td>
+  </tr>
+  <tr>
+    <td>Settings: profile toggle, autodetect, PoE2 folder picker, import/export, catch-up.</td>
+    <td>Walking into a new zone in PoE2 auto-switches the overlay via Client.txt tail.</td>
+  </tr>
+</table>
 
 ## Features
 
@@ -23,7 +44,7 @@ A Path of Exile 2 leveling overlay — class profiles, skill gem guide, and Clie
 
 ## Install
 
-1. Download the latest `ExileXP-<version>-portable.exe` from the [Releases](https://github.com/Naean/ExileXP/releases) page.
+1. Download the latest `ExileXP-<version>-portable.exe` from the [Releases](https://github.com/andreins/ExileXP/releases) page.
 2. Double-click to run. **No install — no uninstaller — no registry footprint.** Settings live in `%APPDATA%/ExileXP/`.
 
 > **First-run SmartScreen warning:** the .exe is not code-signed (paid certs cost $90+/yr — skipped to keep the project free). Windows will show "Windows protected your PC" on first launch. Click **More info → Run anyway**.
@@ -80,4 +101,4 @@ npm run dist       # Produce release/ExileXP-<version>-portable.exe
 
 ## License
 
-[MIT](LICENSE) © 2026 Naean
+[MIT](LICENSE) © 2026 andreins

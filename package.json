@@ -4,13 +4,13 @@
   "version": "0.1.0",
   "description": "Path of Exile 2 leveling overlay — class profiles, skill gem guide, Client.txt zone autodetect.",
   "author": {
-    "name": "Naean"
+    "name": "andreins"
   },
   "license": "MIT",
-  "homepage": "https://github.com/Naean/ExileXP",
+  "homepage": "https://github.com/andreins/ExileXP",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Naean/ExileXP.git"
+    "url": "https://github.com/andreins/ExileXP.git"
   },
   "private": false,
   "type": "module",
