@@ -31,6 +31,24 @@
 	--font-base: 13px;
 	--font-lg:   14px;
 
+	/* ── Inline highlight tokens ──────────────────────────── */
+	--hl-npc:  #c4a47e;
+	--hl-boss: #c87060;
+	--hl-loc:  #d4a258;
+	--hl-item: #7e9eb8;
+
+	/* ── Task-note tokens ─────────────────────────────────── */
+	--note-tip-bg:      rgba(126, 158, 184, 0.10);
+	--note-tip-border:  #7e9eb8;
+	--note-warn-bg:     rgba(200, 112, 96, 0.10);
+	--note-warn-border: #c87060;
+	--note-new-bg:      rgba(184, 138, 160, 0.10);
+	--note-new-border:  #b88aa0;
+	--note-success-bg:  rgba(155, 184, 122, 0.10);
+	--note-success-border: #9bb87a;
+	--note-info-bg:     rgba(140, 128, 111, 0.08);
+	--note-info-border: #8c806f;
+
 	font-family: Inter, system-ui, sans-serif;
 	color: var(--text-body);
 	background: transparent;
@@ -312,10 +330,27 @@
 .zoneNote--tip     { color: #6b9ed6; }
 .zoneNote--patch   { color: var(--text-reward); }
 
+/* ── Inline highlights ────────────────────────────────────── */
+.hl { font-weight: inherit; }
+.hl--npc  { color: var(--hl-npc); }
+.hl--boss { color: var(--hl-boss); font-weight: 600; }
+.hl--loc  { color: var(--hl-loc); }
+.hl--item { color: var(--hl-item); }
+
 /* ── Task list ────────────────────────────────────────────── */
 .taskList {
 	display: flex;
 	flex-direction: column;
+}
+
+.taskGroup {
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid var(--border-subtle);
+}
+
+.taskGroup:first-child {
+	border-top: none;
 }
 
 .taskRow {
@@ -325,14 +360,9 @@
 	padding: 7px 12px;
 	font-size: var(--font-base);
 	color: var(--text-body);
-	border-top: 1px solid var(--border-subtle);
 	cursor: pointer;
 	line-height: 1.45;
 	transition: background 0.1s;
-}
-
-.taskRow:first-child {
-	border-top: none;
 }
 
 .taskRow:hover {
@@ -347,22 +377,45 @@
 	text-decoration: line-through;
 }
 
-.taskRow--boss .taskText {
-	color: var(--text-boss);
-	font-weight: 600;
-}
-
 .taskRow--optional {
 	opacity: 0.72;
 }
 
-.taskCheckbox {
+/* ── Custom checkbox ──────────────────────────────────────── */
+.checkbox {
 	width: 13px;
 	height: 13px;
 	flex-shrink: 0;
 	margin-top: 2px;
-	accent-color: var(--accent-bronze);
+	background: transparent;
+	border: 1.5px solid var(--text-muted);
+	border-radius: 3px;
 	cursor: pointer;
+	padding: 0;
+	position: relative;
+	transition: border-color 0.15s, background 0.15s;
+}
+
+.checkbox:hover {
+	border-color: var(--accent-bronze);
+}
+
+.checkbox--done {
+	background: var(--accent-bronze);
+	border-color: var(--accent-bronze);
+}
+
+.checkbox--done::after {
+	content: "✓";
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 9px;
+	line-height: 1;
+	color: #fff;
+	font-weight: 700;
 }
 
 .taskText {
@@ -378,18 +431,56 @@
 	white-space: nowrap;
 }
 
-/* ── Reward badges ────────────────────────────────────────── */
-.badge {
+/* ── Task notes (below a step) ────────────────────────────── */
+.taskNote {
+	margin: 0 12px 6px 33px;
+	padding: 5px 10px;
+	border-left: 2px solid var(--note-info-border);
+	background: var(--note-info-bg);
+	border-radius: 0 3px 3px 0;
+	font-size: var(--font-sm);
+	line-height: 1.45;
+	color: var(--text-body);
+}
+
+.taskNote--tip     { border-color: var(--note-tip-border);     background: var(--note-tip-bg); }
+.taskNote--warning { border-color: var(--note-warn-border);    background: var(--note-warn-bg); }
+.taskNote--new     { border-color: var(--note-new-border);     background: var(--note-new-bg); }
+.taskNote--success { border-color: var(--note-success-border); background: var(--note-success-bg); }
+.taskNote--info    { border-color: var(--note-info-border);    background: var(--note-info-bg); }
+
+.taskNote__label {
+	font-variant: small-caps;
+	letter-spacing: 0.1em;
+	font-size: 9px;
+	font-weight: 700;
+	margin-right: 6px;
+	padding: 1px 4px;
+	border-radius: 2px;
+}
+
+.taskNote--tip     .taskNote__label { color: var(--note-tip-border);     border: 1px solid var(--note-tip-border); }
+.taskNote--warning .taskNote__label { color: var(--note-warn-border);    border: 1px solid var(--note-warn-border); }
+.taskNote--new     .taskNote__label { color: var(--note-new-border);     border: 1px solid var(--note-new-border); }
+.taskNote--success .taskNote__label { color: var(--note-success-border); border: 1px solid var(--note-success-border); }
+.taskNote--info    .taskNote__label { color: var(--note-info-border);    border: 1px solid var(--note-info-border); }
+
+/* ── Reward tags (typed) ──────────────────────────────────── */
+.reward-tag {
 	display: inline-block;
 	font-size: var(--font-xs);
 	padding: 1px 5px;
-	border: 1px solid var(--accent-bronze-dim);
 	border-radius: var(--radius-sm);
-	color: var(--text-reward);
 	background: transparent;
 	white-space: nowrap;
 	flex-shrink: 0;
 }
+
+.reward-tag--default { color: #9db88a; border: 1px solid rgba(157, 184, 138, 0.35); }
+.reward-tag--gem     { color: #7e9eb8; border: 1px solid rgba(126, 158, 184, 0.35); }
+.reward-tag--craft   { color: var(--text-reward); border: 1px solid var(--accent-bronze-dim); }
+.reward-tag--optional{ color: #b88aa0; border: 1px solid rgba(184, 138, 160, 0.35); }
+.reward-tag--perm    { color: #9bb87a; border: 1px solid rgba(155, 184, 122, 0.38); font-weight: 600; }
 
 /* ── Zone nav ─────────────────────────────────────────────── */
 .zoneNav {

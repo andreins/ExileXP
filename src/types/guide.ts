@@ -15,14 +15,27 @@ export type ZoneNote = {
 	text: string;
 };
 
+export type HighlightKind = "npc" | "boss" | "loc" | "item";
+
+export type TaskNoteType = "new" | "tip" | "warning" | "success" | "info";
+export type TaskNote = {
+	type: TaskNoteType;
+	label?: string;
+	text: string;
+};
+
+export type RewardKind = "default" | "gem" | "craft" | "optional" | "perm";
+export type Reward = { text: string; kind?: RewardKind };
+
 export type GuideTask = {
 	id: string;
 	text: string;
 	required?: boolean;
 	optional?: boolean;
 	boss?: boolean;
-	rewards?: string[];
+	rewards?: Reward[];
 	note?: string;
+	notesAfter?: TaskNote[];
 };
 
 export type ZoneGuide = {

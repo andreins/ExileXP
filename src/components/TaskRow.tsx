@@ -1,4 +1,6 @@
 import type { GuideTask } from "../types/guide";
+import { renderMarkup } from "../lib/markup";
+import TaskNote from "./TaskNote";
 
 type Props = {
 	task: GuideTask;
@@ -9,22 +11,38 @@ type Props = {
 export default function TaskRow({ task, done, onToggle }: Props) {
 	let rowClass = "taskRow";
 	if (done) rowClass += " taskRow--done";
-	if (task.boss) rowClass += " taskRow--boss";
 	if (task.optional) rowClass += " taskRow--optional";
 
 	return (
-		<label className={rowClass}>
-			<input
-				type="checkbox"
-				className="taskCheckbox"
-				checked={done}
-				onChange={onToggle}
-			/>
-			<span className="taskText">{task.text}</span>
-			{task.optional && <span className="taskOptional">opt</span>}
-			{task.rewards?.map((reward) => (
-				<span key={reward} className="badge">{reward}</span>
+		<div className="taskGroup">
+			<div className={rowClass} onClick={onToggle}>
+				<button
+					className={`checkbox${done ? " checkbox--done" : ""}`}
+					role="checkbox"
+					aria-checked={done}
+					tabIndex={0}
+					onClick={(e) => e.stopPropagation()}
+					onKeyDown={(e) => {
+						if (e.key === " " || e.key === "Enter") {
+							e.preventDefault();
+							onToggle();
+						}
+					}}
+				/>
+				<span className="taskText">{renderMarkup(task.text)}</span>
+				{task.optional && <span className="taskOptional">opt</span>}
+				{task.rewards?.map((reward, i) => (
+					<span
+						key={i}
+						className={`reward-tag reward-tag--${reward.kind ?? "default"}`}
+					>
+						{reward.text}
+					</span>
+				))}
+			</div>
+			{task.notesAfter?.map((note, i) => (
+				<TaskNote key={i} note={note} />
 			))}
-		</label>
+		</div>
 	);
 }

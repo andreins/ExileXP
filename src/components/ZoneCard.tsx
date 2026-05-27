@@ -1,4 +1,5 @@
 import type { ZoneGuide } from "../types/guide";
+import { renderMarkup } from "../lib/markup";
 import TaskRow from "./TaskRow";
 
 type Props = {
@@ -36,7 +37,7 @@ export default function ZoneCard({ zone, completed, onToggleTask }: Props) {
 				<div className="zoneNotes">
 					{zone.notes.map((note, i) => (
 						<p key={i} className={`zoneNote zoneNote--${note.type}`}>
-							{note.text}
+							{renderMarkup(note.text)}
 						</p>
 					))}
 				</div>
