@@ -138,6 +138,16 @@ app.whenReady().then(() => {
 		return clickThrough;
 	});
 
+	// Renderer-driven temporary override: when the user has click-through ON but the
+	// cursor is hovering an "always interactive" hot zone (e.g. the click-through
+	// button itself), the renderer asks main to temporarily process mouse events so
+	// the button stays clickable. When the cursor leaves the hot zone we revert.
+	ipcMain.on("overlay:set-mouse-interactive", (_event, interactive: boolean) => {
+		if (!win) return;
+		const shouldIgnore = clickThrough && !interactive;
+		win.setIgnoreMouseEvents(shouldIgnore, { forward: true });
+	});
+
 	ipcMain.handle("overlay:set-client-log-path", (_event, p: string | null) => {
 		userClientLogPath = p && p.trim() !== "" ? p.trim() : null;
 		logTail.restart();

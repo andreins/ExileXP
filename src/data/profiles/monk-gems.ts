@@ -1,4 +1,37 @@
-import type { ProfileGems } from "../../types/guide";
+import type { ActGems, ProfileGems } from "../../types/guide";
+
+// Act 4 gem setup — also used for Interludes since the build doesn't change.
+const act4Gems: ActGems = {
+	requirements: { str: 30, dex: 60, int: 35 },
+	title: "Whirling Assault Swap",
+	skills: [
+		{ slot: 1, name: "Whirling Assault", level: 13, supports: [{ name: "Rage II" }, { name: "Magnified Area II" }, { name: "Pursuit II" }, { name: "Heavy Swing" }] },
+		// Hollow Focus (best-guess by support gems — Ancestral Call II + Pursuit II = mapping bell)
+		{ slot: 2, name: "Tempest Bell", displayName: "Hollow Focus", level: 13, supports: [{ name: "Ancestral Call II" }, { name: "Cooldown Recovery II" }, { name: "Pursuit II" }] },
+		// Real Tempest Bell — Heavy Swing = bossing
+		{ slot: 3, name: "Tempest Bell", level: 13, supports: [{ name: "Cooldown Recovery II" }, { name: "Magnified Area II" }, { name: "Heavy Swing" }] },
+		{ slot: 4, name: "Killing Palm", level: 13, supports: [{ name: "Charge Profusion I" }, { name: "Thrill of the Kill II" }, { name: "Blazing Critical" }] },
+		{ slot: 5, name: "Charged Staff", level: 13, supports: [{ name: "Prolonged Duration II" }, { name: "Culling Strike I" }, { name: "Innervate" }] },
+		{ slot: 6, name: "Staggering Palm", level: 13, supports: [{ name: "Retreat II" }, { name: "Multishot II" }, { name: "Longshot II" }] },
+		{ slot: 7, name: "Hand of Chayula", level: 13, supports: [{ name: "Elemental Weakness" }, { name: "Heightened Curse" }] },
+		{ slot: 8, name: "Herald of Thunder", level: 13, supports: [{ name: "Magnified Area II" }, { name: "Elemental Armament II" }] },
+		{ slot: 9, name: "Wind Dancer", level: 13, supports: [{ name: "Magnified Area II" }, { name: "Maim" }, { name: "Blind I" }] },
+	],
+	sections: [
+		{
+			kind: "mapping", title: "How to Play — Mapping", body:
+				"The new {item:Hollow Focus} Bells are Cullable and Primed for Heavy Stun → 24/7 uptime on {item:Charged Staff} and {item:Staggering Palm} projectiles → big clear & DPS boost. Use {item:Killing Palm} on the {item:Hollow Focus Technique} Bells for Power Charges. All hits against these Ghost Bells are guaranteed Crits → free {item:Blazing Critical} activations.\n\n{item:Whirling Assault} has massive AoE and solid damage — combine with {item:Tempest Bell} on Rares and bosses to melt them.",
+		},
+		{
+			kind: "bossing", title: "How to Play — Bossing", body:
+				"Build Power Charges from {item:Hollow Focus Technique} Bells with {item:Killing Palm} to fuel {item:Charged Staff}. Proc {item:Staggering Palm} off Ghost Bells for Extra Projectile. Do this leading up to the boss.\n\nOpen the fight with {item:Hand of Chayula} → {item:Elemental Weakness}. Start spinning with {item:Whirling Assault}, drop {item:Tempest Bell} once at 4 combo. Spam Bells + {item:Whirling Assault} to melt. Reapply the curse when needed.",
+		},
+		{
+			kind: "priority", title: "Gem Level Up Priority", body:
+				"1. {item:Whirling Assault}\n2. {item:Tempest Bell}\n3. {item:Staggering Palm}\n4. {item:Hand of Chayula} / {item:Elemental Weakness} — lowers target resistances significantly.\n5. {item:Charged Staff}",
+		},
+	],
+};
 
 export const monkGems: ProfileGems = {
 	act1: {
@@ -15,7 +48,7 @@ export const monkGems: ProfileGems = {
 			{ slot: 9, name: "Herald of Thunder", level: 4, supports: [] },
 		],
 		sections: [
-			{ kind: "note", title: "Headline", body: "Use Quarterstaff Strike until you unlock {item:Wind Blast} for Rage / Stun Buildup!" },
+			{ kind: "note", body: "Use Quarterstaff Strike until you unlock {item:Wind Blast} for Rage / Stun Buildup!" },
 			{
 				kind: "order", title: "Skill Gem Order", body:
 					"Your 1st Lv1 Uncut Skill Gem from {npc:Renly} after killing {boss:The Bloated Miller} → use on {item:Entangle}. Pick up your 2nd Lv1 Uncut Skill Gem from the Abandoned Stash in {loc:Clearfell} → use on {item:Killing Palm}.\n\nUse {item:Entangle} on packs to manage early clear speed — drop it once you get {item:Wing Blast}.\n\nLv2 Uncut Skill Gem from the {loc:The Red Vale} league mechanic → use on {item:Frost Bomb} (applies Elemental Exposure → lowers resistances → more {item:Falling Thunder} damage).\n\nLv3 Uncut Skill Gem from killing {boss:The Rust King} in {loc:The Red Vale} → use on {item:Wing Blast}.\n\nLv3 Uncut Skill Gem from the {loc:The Grim Tangle} league mechanic → use on {item:Pounce}.",
@@ -94,35 +127,8 @@ export const monkGems: ProfileGems = {
 		],
 	},
 
-	act4: {
-		requirements: { str: 30, dex: 60, int: 35 },
-		title: "Whirling Assault Swap",
-		skills: [
-			{ slot: 1, name: "Whirling Assault", level: 13, supports: [{ name: "Rage II" }, { name: "Magnified Area II" }, { name: "Pursuit II" }, { name: "Heavy Swing" }] },
-			// RENAMED — best-guess Hollow Focus based on support gems (Ancestral Call II + Pursuit II = mapping bell)
-			{ slot: 2, name: "Tempest Bell", displayName: "Hollow Focus", level: 13, supports: [{ name: "Ancestral Call II" }, { name: "Cooldown Recovery II" }, { name: "Pursuit II" }] },
-			// Real Tempest Bell — Heavy Swing = bossing
-			{ slot: 3, name: "Tempest Bell", level: 13, supports: [{ name: "Cooldown Recovery II" }, { name: "Magnified Area II" }, { name: "Heavy Swing" }] },
-			{ slot: 4, name: "Killing Palm", level: 13, supports: [{ name: "Charge Profusion I" }, { name: "Thrill of the Kill II" }, { name: "Blazing Critical" }] },
-			{ slot: 5, name: "Charged Staff", level: 13, supports: [{ name: "Prolonged Duration II" }, { name: "Culling Strike I" }, { name: "Innervate" }] },
-			{ slot: 6, name: "Staggering Palm", level: 13, supports: [{ name: "Retreat II" }, { name: "Multishot II" }, { name: "Longshot II" }] },
-			{ slot: 7, name: "Hand of Chayula", level: 13, supports: [{ name: "Elemental Weakness" }, { name: "Heightened Curse" }] },
-			{ slot: 8, name: "Herald of Thunder", level: 13, supports: [{ name: "Magnified Area II" }, { name: "Elemental Armament II" }] },
-			{ slot: 9, name: "Wind Dancer", level: 13, supports: [{ name: "Magnified Area II" }, { name: "Maim" }, { name: "Blind I" }] },
-		],
-		sections: [
-			{
-				kind: "mapping", title: "How to Play — Mapping", body:
-					"The new {item:Hollow Focus} Bells are Cullable and Primed for Heavy Stun → 24/7 uptime on {item:Charged Staff} and {item:Staggering Palm} projectiles → big clear & DPS boost. Use {item:Killing Palm} on the {item:Hollow Focus Technique} Bells for Power Charges. All hits against these Ghost Bells are guaranteed Crits → free {item:Blazing Critical} activations.\n\n{item:Whirling Assault} has massive AoE and solid damage — combine with {item:Tempest Bell} on Rares and bosses to melt them.",
-			},
-			{
-				kind: "bossing", title: "How to Play — Bossing", body:
-					"Build Power Charges from {item:Hollow Focus Technique} Bells with {item:Killing Palm} to fuel {item:Charged Staff}. Proc {item:Staggering Palm} off Ghost Bells for Extra Projectile. Do this leading up to the boss.\n\nOpen the fight with {item:Hand of Chayula} → {item:Elemental Weakness}. Start spinning with {item:Whirling Assault}, drop {item:Tempest Bell} once at 4 combo. Spam Bells + {item:Whirling Assault} to melt. Reapply the curse when needed.",
-			},
-			{
-				kind: "priority", title: "Gem Level Up Priority", body:
-					"1. {item:Whirling Assault}\n2. {item:Tempest Bell}\n3. {item:Staggering Palm}\n4. {item:Hand of Chayula} / {item:Elemental Weakness} — lowers target resistances significantly.\n5. {item:Charged Staff}",
-			},
-		],
-	},
+	act4: act4Gems,
+
+	// Build doesn't change for the Interludes — reuse the Act 4 gem setup.
+	interludes: act4Gems,
 };

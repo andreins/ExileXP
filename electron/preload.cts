@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld("overlay", {
 		};
 	},
 	setWindowHeight: (height: number) => ipcRenderer.send("overlay:set-height", height),
+	setMouseInteractive: (interactive: boolean) => ipcRenderer.send("overlay:set-mouse-interactive", interactive),
 	setClientLogPath: (p: string | null) => ipcRenderer.invoke("overlay:set-client-log-path", p),
 	getDefaultClientLogPath: () => ipcRenderer.invoke("overlay:get-default-client-log-path"),
 	pickClientLogPath: () => ipcRenderer.invoke("overlay:pick-client-log-path"),

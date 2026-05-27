@@ -189,6 +189,30 @@ function App() {
 		return window.overlay?.onClickThroughChanged((value) => setClickThrough(value));
 	}, []);
 
+	// When click-through is ON, the window normally ignores all mouse events so the
+	// user can't click anything in the overlay — including the click-through button
+	// itself. Watch forwarded mousemove events; when the cursor is over an element
+	// flagged with [data-always-interactive], ask main to temporarily process mouse
+	// events so that element stays clickable.
+	useEffect(() => {
+		if (!clickThrough) return;
+		let lastInteractive = false;
+		const onMove = (e: MouseEvent) => {
+			const target = document.elementFromPoint(e.clientX, e.clientY);
+			const interactive = target?.closest("[data-always-interactive]") != null;
+			if (interactive !== lastInteractive) {
+				lastInteractive = interactive;
+				window.overlay?.setMouseInteractive(interactive);
+			}
+		};
+		document.addEventListener("mousemove", onMove);
+		return () => {
+			document.removeEventListener("mousemove", onMove);
+			// Reset to honour the user's click-through preference on cleanup.
+			window.overlay?.setMouseInteractive(false);
+		};
+	}, [clickThrough]);
+
 	useEffect(() => {
 		// Fetch the default path to show as placeholder in the settings panel
 		window.overlay?.getDefaultClientLogPath().then((p) => {

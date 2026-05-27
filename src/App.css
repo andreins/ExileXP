@@ -920,6 +920,28 @@
 	gap: 6px;
 }
 
+.gemsPanel__sectionsToggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-top: 4px;
+	padding: 6px 10px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-sm);
+	color: var(--text-muted);
+	font-size: var(--font-xs);
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	cursor: pointer;
+}
+
+.gemsPanel__sectionsToggle:hover {
+	color: var(--text-gold);
+	border-color: var(--border-gold);
+}
+
 /* ── Gem card ─────────────────────────────────────────────── */
 .gemCard {
 	background: rgba(18, 13, 8, 0.55);

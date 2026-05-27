@@ -19,7 +19,8 @@ export default function OverlayHeader({ clickThrough, onToggleClickThrough, sett
 				<button
 					className={`clickThroughBtn ${clickThrough ? "clickThroughBtn--locked" : ""}`}
 					onClick={onToggleClickThrough}
-					title={clickThrough ? "Click-through ON (locked)" : "Click-through OFF (interactive)"}
+					title={clickThrough ? "Click-through ON — click here to disable" : "Click-through OFF (interactive)"}
+					data-always-interactive="true"
 				>
 					{clickThrough ? "⊘" : "◎"}
 				</button>

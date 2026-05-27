@@ -152,6 +152,10 @@ export default function SettingsPanel({
 
 	const effectivePath = clientLogPath || defaultClientLogPath || null;
 	const isAutoDetected = !clientLogPath && !!defaultClientLogPath;
+	// Display only the PoE2 folder — strip the trailing /logs/Client.txt that we use internally.
+	const displayFolder = effectivePath
+		? effectivePath.replace(/[/\\]logs[/\\]Client\.txt$/i, "")
+		: null;
 
 	return (
 		<div className="settingsPanel">
@@ -186,11 +190,11 @@ export default function SettingsPanel({
 				</label>
 			</div>
 
-			{/* Client.txt path */}
+			{/* Path of Exile 2 folder */}
 			<div className="settingsRow settingsRow--column">
-				<span className="settingsLabel">Client.txt path</span>
+				<span className="settingsLabel">Path of Exile 2 folder</span>
 				<div className="settingsPathRow">
-					<button className="settingsActionBtn" onClick={handleBrowse} title="Pick Path of Exile 2 folder — Client.txt is found automatically">
+					<button className="settingsActionBtn" onClick={handleBrowse} title="Pick your Path of Exile 2 install folder — Client.txt is located automatically">
 						Browse…
 					</button>
 					{clientLogPath && (
@@ -199,9 +203,9 @@ export default function SettingsPanel({
 						</button>
 					)}
 				</div>
-				{effectivePath ? (
-					<span className="settingsMuted" title={effectivePath}>
-						{isAutoDetected ? "Auto-detected: " : "Manual: "}{effectivePath}
+				{displayFolder ? (
+					<span className="settingsMuted" title={effectivePath ?? undefined}>
+						{isAutoDetected ? "Auto-detected: " : "Manual: "}{displayFolder}
 					</span>
 				) : (
 					<span className="settingsMuted">Not detected — click Browse and pick your Path of Exile 2 install folder.</span>

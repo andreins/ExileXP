@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { ActId, ActGems, GemSection, ProfileId } from "../types/guide";
 import { profileMap } from "../data/profiles";
 import { renderMarkup } from "../lib/markup";
@@ -11,6 +12,7 @@ function actLabel(actId: ActId): string {
 		case "act2": return "Act 2";
 		case "act3": return "Act 3";
 		case "act4": return "Act 4";
+		case "interludes": return "Interludes";
 		default: return actId;
 	}
 }
@@ -22,7 +24,7 @@ function sectionDefaultTitle(kind: GemSection["kind"]): string {
 		case "bossing": return "How to Play — Bossing";
 		case "priority": return "Gem Level Up Priority";
 		case "warning": return "Note";
-		case "note": return "Note";
+		case "note": return ""; // intro / unlabeled — render body only
 		default: return "";
 	}
 }
@@ -110,6 +112,31 @@ type Props = {
 };
 
 export default function GemsPanel({ act, profile, open, onToggle }: Props) {
+	// Hooks must run unconditionally — even when gems data is absent — to keep
+	// hook order stable across profile/act changes.
+	const sectionsKey = `poe2-overlay-gems-sections-open:${profile}:${act}`;
+	const [sectionsOpen, setSectionsOpen] = useState<boolean>(true);
+	useEffect(() => {
+		try {
+			const raw = localStorage.getItem(sectionsKey);
+			setSectionsOpen(raw === null ? true : raw === "true");
+		} catch {
+			setSectionsOpen(true);
+		}
+	}, [sectionsKey]);
+
+	const toggleSections = () => {
+		setSectionsOpen((prev) => {
+			const next = !prev;
+			try {
+				localStorage.setItem(sectionsKey, String(next));
+			} catch {
+				/* ignore */
+			}
+			return next;
+		});
+	};
+
 	const gems = profileMap[profile]?.gems?.[act];
 	if (!gems) return null;
 
@@ -143,11 +170,26 @@ export default function GemsPanel({ act, profile, open, onToggle }: Props) {
 					</div>
 
 					{gems.sections.length > 0 && (
-						<div className="gemsPanel__sections">
-							{gems.sections.map((section, i) => (
-								<GemSection key={i} section={section} />
-							))}
-						</div>
+						<>
+							<button
+								type="button"
+								className="gemsPanel__sectionsToggle"
+								onClick={toggleSections}
+								aria-expanded={sectionsOpen}
+							>
+								<span>{sectionsOpen ? "Hide notes" : "Show notes"}</span>
+								<span className={`gemsPanel__chevron${sectionsOpen ? " gemsPanel__chevron--open" : ""}`}>
+									▾
+								</span>
+							</button>
+							{sectionsOpen && (
+								<div className="gemsPanel__sections">
+									{gems.sections.map((section, i) => (
+										<GemSection key={i} section={section} />
+									))}
+								</div>
+							)}
+						</>
 					)}
 				</div>
 			)}

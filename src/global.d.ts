@@ -6,6 +6,7 @@ declare global {
 			setClickThrough: (value: boolean) => Promise<boolean>;
 			onClickThroughChanged: (callback: (value: boolean) => void) => () => void;
 			setWindowHeight: (height: number) => void;
+			setMouseInteractive: (interactive: boolean) => void;
 			setClientLogPath: (p: string | null) => Promise<string | null>;
 			getDefaultClientLogPath: () => Promise<string | null>;
 			pickClientLogPath: () => Promise<string | null>;
