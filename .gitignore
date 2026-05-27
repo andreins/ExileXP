@@ -23,3 +23,10 @@ dist-electron
 *.njsproj
 *.sln
 *.sw?
+
+# Per-user Claude Code config (settings.local.json, etc.)
+.claude/
+
+# Stray tool-output filenames that include literal Windows paths
+# (artifact of a tool misinterpreting "C:\..." as a filename)
+C:Users*
