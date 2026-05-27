@@ -1,32 +1,9 @@
-import { useState } from "react";
 import type { ActId, ActGems, GemSection, ProfileId } from "../types/guide";
 import { profileMap } from "../data/profiles";
 import { renderMarkup } from "../lib/markup";
 import GemCard from "./GemCard";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function storageKey(profile: ProfileId, actId: ActId): string {
-	return `poe2-overlay-gems-open:${profile}:${actId}`;
-}
-
-function loadOpen(profile: ProfileId, actId: ActId): boolean {
-	try {
-		const raw = localStorage.getItem(storageKey(profile, actId));
-		if (raw === null) return false; // default collapsed
-		return raw === "true";
-	} catch {
-		return false;
-	}
-}
-
-function saveOpen(profile: ProfileId, actId: ActId, open: boolean): void {
-	try {
-		localStorage.setItem(storageKey(profile, actId), String(open));
-	} catch {
-		// ignore
-	}
-}
 
 function actLabel(actId: ActId): string {
 	switch (actId) {
@@ -128,26 +105,20 @@ function RequirementsRow({ req }: { req: NonNullable<ActGems["requirements"]> })
 type Props = {
 	act: ActId;
 	profile: ProfileId;
+	open: boolean;
+	onToggle: () => void;
 };
 
-export default function GemsPanel({ act, profile }: Props) {
+export default function GemsPanel({ act, profile, open, onToggle }: Props) {
 	const gems = profileMap[profile]?.gems?.[act];
 	if (!gems) return null;
-
-	const [open, setOpen] = useState<boolean>(() => loadOpen(profile, act));
-
-	const toggle = () => {
-		const next = !open;
-		setOpen(next);
-		saveOpen(profile, act, next);
-	};
 
 	return (
 		<div className="gemsPanel">
 			<button
 				type="button"
 				className="gemsPanel__header"
-				onClick={toggle}
+				onClick={onToggle}
 				aria-expanded={open}
 			>
 				<span className="gemsPanel__headerTitle">Skill Gems · {actLabel(act)}</span>

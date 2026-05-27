@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, screen } from "electron";
+import { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,11 +12,33 @@ let clickThrough = false;
 let desiredHeight = 390;
 let desiredWidth = 460;
 
-const CANDIDATES = [
-	"C:/Program Files (x86)/Steam/steamapps/common/Path of Exile 2/logs/Client.txt",
-	"C:/Program Files (x86)/Grinding Gear Games/Path of Exile 2/logs/Client.txt",
+// ── Client.txt auto-detection ───────────────────────────────────────────────
+// Cross common drives × common install patterns. Order matters: first match wins.
+
+const DRIVES = ["C", "D", "E", "F", "G", "H"];
+const INSTALL_PATTERNS = [
+	"Program Files (x86)/Steam/steamapps/common/Path of Exile 2/logs/Client.txt",
+	"Program Files/Steam/steamapps/common/Path of Exile 2/logs/Client.txt",
+	"SteamLibrary/steamapps/common/Path of Exile 2/logs/Client.txt",
+	"Steam/steamapps/common/Path of Exile 2/logs/Client.txt",
+	"Games/Steam/steamapps/common/Path of Exile 2/logs/Client.txt",
+	"steamapps/common/Path of Exile 2/logs/Client.txt",
+	"Program Files (x86)/Grinding Gear Games/Path of Exile 2/logs/Client.txt",
+	"Program Files/Grinding Gear Games/Path of Exile 2/logs/Client.txt",
+	"Grinding Gear Games/Path of Exile 2/logs/Client.txt",
 ];
-const defaultClientLogPath = CANDIDATES.find((p) => fs.existsSync(p)) ?? null;
+
+function detectClientLogPath(): string | null {
+	for (const d of DRIVES) {
+		for (const p of INSTALL_PATTERNS) {
+			const full = `${d}:/${p}`;
+			if (fs.existsSync(full)) return full;
+		}
+	}
+	return null;
+}
+
+const defaultClientLogPath = detectClientLogPath();
 
 let userClientLogPath: string | null = null;
 
@@ -124,6 +146,32 @@ app.whenReady().then(() => {
 
 	ipcMain.handle("overlay:get-default-client-log-path", () => {
 		return defaultClientLogPath;
+	});
+
+	// Open a folder picker. User selects a PoE2 install folder (or its parent or `logs/`)
+	// and we derive Client.txt from there. Returns the resolved Client.txt path on success,
+	// the string "not-found" if a folder was chosen but Client.txt couldn't be located,
+	// or null if the dialog was cancelled.
+	ipcMain.handle("overlay:pick-client-log-path", async () => {
+		if (!win) return null;
+		const result = await dialog.showOpenDialog(win, {
+			title: "Select Path of Exile 2 folder",
+			properties: ["openDirectory"],
+		});
+		if (result.canceled || result.filePaths.length === 0) return null;
+		const picked = result.filePaths[0];
+		// Try common layouts relative to what the user picked.
+		const candidates = [
+			path.join(picked, "logs", "Client.txt"),                          // picked PoE2 root
+			path.join(picked, "Client.txt"),                                  // picked PoE2/logs
+			path.join(picked, "Path of Exile 2", "logs", "Client.txt"),       // picked steamapps/common
+			path.join(picked, "common", "Path of Exile 2", "logs", "Client.txt"), // picked steamapps
+		];
+		const found = candidates.find((p) => fs.existsSync(p));
+		if (!found) return "not-found";
+		userClientLogPath = found;
+		logTail.restart();
+		return found;
 	});
 });
 

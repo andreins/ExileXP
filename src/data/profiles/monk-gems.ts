@@ -45,7 +45,6 @@ export const monkGems: ProfileGems = {
 			{ slot: 8, name: "Herald of Thunder", level: 6, supports: [{ name: "Magnified Area I" }] },
 		],
 		sections: [
-			{ kind: "warning", title: "Note", body: "The {item:Tempest Bell} entry is filler for {item:Hollow Focus Technique} (not yet in Mobalytics). Support gems shown are a best guess — will update after testing." },
 			{
 				kind: "order", title: "Skill Gem Order", body:
 					"Drop Lv7 Uncut Skill Gems → use on {item:Siphoning Strike} for more Power Charge generation if needed.\n\n{item:Storm Wave} is popular in the campaign — included as a swap from {item:Wind Blast}. Great for Shocking bosses (combo with {item:Siphoning Strike} for Power Charges) and solid clear. Stick with your prior setup if preferred; included from here forward.",
@@ -80,7 +79,6 @@ export const monkGems: ProfileGems = {
 			{ slot: 9, name: "Herald of Thunder", level: 9, supports: [{ name: "Magnified Area I" }, { name: "Elemental Armament II" }] },
 		],
 		sections: [
-			{ kind: "warning", title: "Note", body: "The {item:Tempest Bell} entry is filler for {item:Hollow Focus Technique} (not yet in Mobalytics). Support gems are a best guess — will update after testing." },
 			{
 				kind: "mapping", title: "How to Play — Mapping", body:
 					"{item:Storm Wave} has great damage and synergizes with {item:Herald of Thunder}. Spam until you want Power Charges from {item:Killing Palm} → {item:Falling Thunder}.\n\n{item:Hollow Focus Technique} Bells spawn around you and help clear packs. Use {item:Killing Palm} on them to refill Power Charges (on top of {item:Siphoning Strike}).\n\nUse {item:Wolf Form} from your Talisman — dodge roll in Wolf Form to traverse zones much faster.",

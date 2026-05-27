@@ -23,7 +23,7 @@ export default function ZoneCard({ zone, completed, onToggleTask }: Props) {
 				<div className="zoneHeaderLeft">
 					<h2 className="zoneName">{zone.name}</h2>
 					<div className="zoneBadges">
-						{zone.level && <span className="zoneBadge">Lvl {zone.level}</span>}
+						{zone.level && <span className="zoneBadge">Target Level: {zone.level}</span>}
 						{zone.tags?.map((tag) => (
 							<span key={tag} className={`zoneBadge zoneBadge--${tag}`}>
 								{TAG_LABELS[tag] ?? tag}
@@ -44,14 +44,20 @@ export default function ZoneCard({ zone, completed, onToggleTask }: Props) {
 			)}
 
 			<div className="taskList">
-				{zone.tasks.map((task) => (
-					<TaskRow
-						key={task.id}
-						task={task}
-						done={Boolean(completed[task.id])}
-						onToggle={() => onToggleTask(task.id)}
-					/>
-				))}
+				{
+					// Optional tasks render after mandatory ones; stable order within each group.
+					[...zone.tasks]
+						.map((t, i) => ({ t, i }))
+						.sort((a, b) => Number(!!a.t.optional) - Number(!!b.t.optional) || a.i - b.i)
+						.map(({ t: task }) => (
+							<TaskRow
+								key={task.id}
+								task={task}
+								done={Boolean(completed[task.id])}
+								onToggle={() => onToggleTask(task.id)}
+							/>
+						))
+				}
 			</div>
 		</section>
 	);

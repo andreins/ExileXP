@@ -21,7 +21,10 @@ export default function TaskRow({ task, done, onToggle }: Props) {
 					role="checkbox"
 					aria-checked={done}
 					tabIndex={0}
-					onClick={(e) => e.stopPropagation()}
+					onClick={(e) => {
+						e.stopPropagation();
+						onToggle();
+					}}
 					onKeyDown={(e) => {
 						if (e.key === " " || e.key === "Enter") {
 							e.preventDefault();

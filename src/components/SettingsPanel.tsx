@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ProfileId } from "../types/guide";
 import { profiles } from "../data/profiles/index";
 
@@ -25,14 +25,9 @@ export default function SettingsPanel({
 	onResetProfile,
 	onResetAll,
 }: Props) {
-	const [pathInput, setPathInput] = useState(clientLogPath);
 	const [toast, setToast] = useState<string | null>(null);
 	const [importText, setImportText] = useState("");
 	const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-	useEffect(() => {
-		setPathInput(clientLogPath);
-	}, [clientLogPath]);
 
 	function showToast(msg: string) {
 		if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -40,19 +35,20 @@ export default function SettingsPanel({
 		toastTimerRef.current = setTimeout(() => setToast(null), 2000);
 	}
 
-	function handlePathBlur() {
-		onClientLogPathChange(pathInput);
-	}
-
-	function handlePathKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-		if (e.key === "Enter") {
-			(e.target as HTMLInputElement).blur();
+	async function handleBrowse() {
+		const result = await window.overlay?.pickClientLogPath();
+		if (result === null || result === undefined) return; // cancelled
+		if (result === "not-found") {
+			showToast("Client.txt not found in that folder");
+			return;
 		}
+		onClientLogPathChange(result);
+		showToast("Client.txt path updated");
 	}
 
 	function handleResetPath() {
-		setPathInput("");
 		onClientLogPathChange("");
+		showToast(defaultClientLogPath ? "Reverted to auto-detected path" : "Cleared override");
 	}
 
 	function buildExportPayload() {
@@ -154,9 +150,8 @@ export default function SettingsPanel({
 		onResetAll();
 	}
 
-	const placeholder = defaultClientLogPath
-		? defaultClientLogPath
-		: "e.g. C:/Program Files (x86)/Steam/steamapps/common/Path of Exile 2/logs/Client.txt";
+	const effectivePath = clientLogPath || defaultClientLogPath || null;
+	const isAutoDetected = !clientLogPath && !!defaultClientLogPath;
 
 	return (
 		<div className="settingsPanel">
@@ -195,24 +190,21 @@ export default function SettingsPanel({
 			<div className="settingsRow settingsRow--column">
 				<span className="settingsLabel">Client.txt path</span>
 				<div className="settingsPathRow">
-					<input
-						type="text"
-						className="settingsInput"
-						value={pathInput}
-						placeholder={placeholder}
-						onChange={(e) => setPathInput(e.target.value)}
-						onBlur={handlePathBlur}
-						onKeyDown={handlePathKeyDown}
-						spellCheck={false}
-					/>
-					{pathInput && (
-						<button className="settingsLinkBtn" onClick={handleResetPath} title="Reset to default">
+					<button className="settingsActionBtn" onClick={handleBrowse} title="Pick Path of Exile 2 folder — Client.txt is found automatically">
+						Browse…
+					</button>
+					{clientLogPath && (
+						<button className="settingsLinkBtn" onClick={handleResetPath} title="Revert to auto-detected">
 							Reset
 						</button>
 					)}
 				</div>
-				{defaultClientLogPath && !clientLogPath && (
-					<span className="settingsMuted">Using default: {defaultClientLogPath}</span>
+				{effectivePath ? (
+					<span className="settingsMuted" title={effectivePath}>
+						{isAutoDetected ? "Auto-detected: " : "Manual: "}{effectivePath}
+					</span>
+				) : (
+					<span className="settingsMuted">Not detected — click Browse and pick your Path of Exile 2 install folder.</span>
 				)}
 			</div>
 

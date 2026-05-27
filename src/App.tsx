@@ -115,6 +115,29 @@ function App() {
 	// ── Settings panel ────────────────────────────────────────────────────
 	const [settingsOpen, setSettingsOpen] = useState(false);
 
+	// ── Gems panel (open/closed per profile + act, persisted) ─────────────
+	const gemsStorageKey = (p: ProfileId, a: ActId) => `poe2-overlay-gems-open:${p}:${a}`;
+	const [gemsOpen, setGemsOpen] = useState<boolean>(false);
+	useEffect(() => {
+		try {
+			const raw = localStorage.getItem(gemsStorageKey(profile, activeActId));
+			setGemsOpen(raw === "true");
+		} catch {
+			setGemsOpen(false);
+		}
+	}, [profile, activeActId]);
+	const toggleGems = () => {
+		setGemsOpen((prev) => {
+			const next = !prev;
+			try {
+				localStorage.setItem(gemsStorageKey(profile, activeActId), String(next));
+			} catch {
+				/* ignore */
+			}
+			return next;
+		});
+	};
+
 	// ── Click-through ─────────────────────────────────────────────────────
 	const [clickThrough, setClickThrough] = useState(false);
 
@@ -207,11 +230,20 @@ function App() {
 
 	const markZoneDone = () => {
 		if (!activeZone) return;
+		const wasDone = isZoneDone;
 		setCompleted((c) => {
 			const next = { ...c };
-			for (const task of activeZone.tasks) next[task.id] = !isZoneDone;
+			for (const task of activeZone.tasks) next[task.id] = !wasDone;
 			return next;
 		});
+		// Auto-advance when completing (not when un-completing) and the game isn't telling us
+		// where to be. With autodetect ON, the player's actual zone is authoritative.
+		if (!wasDone && autodetect !== "on") {
+			const nextIdx = activeZoneIndex + 1;
+			if (nextIdx < activeAct.zones.length) {
+				setActiveZoneByAct((c) => ({ ...c, [activeAct.id]: nextIdx }));
+			}
+		}
 	};
 
 	const toggleClickThrough = async () => {
@@ -271,31 +303,36 @@ function App() {
 				/>
 			)}
 			<ActTabs acts={guide} activeActId={activeActId} onSelectAct={setActiveActId} />
-			<ProgressStrip zones={activeAct.zones} activeZoneIndex={activeZoneIndex} completed={completed} onZoneSelect={setZoneIndex} />
 
-			<main className="guideMain">
-				{activeZone ? (
-					<ZoneCard zone={activeZone} completed={completed} onToggleTask={toggleTask} />
-				) : (
-					<div className="emptyState">
-						<div className="emptyTitle">{activeAct.label}</div>
-						<div className="emptyText">No zones added yet.</div>
-					</div>
-				)}
-			</main>
+			{!gemsOpen && (
+				<>
+					<ProgressStrip zones={activeAct.zones} activeZoneIndex={activeZoneIndex} completed={completed} onZoneSelect={setZoneIndex} />
 
-			{activeZone && (
-				<ZoneNav
-					activeIndex={activeZoneIndex}
-					totalZones={activeAct.zones.length}
-					isZoneDone={isZoneDone}
-					onPrev={() => setZoneIndex(activeZoneIndex - 1)}
-					onNext={() => setZoneIndex(activeZoneIndex + 1)}
-					onMarkDone={markZoneDone}
-				/>
+					<main className="guideMain">
+						{activeZone ? (
+							<ZoneCard zone={activeZone} completed={completed} onToggleTask={toggleTask} />
+						) : (
+							<div className="emptyState">
+								<div className="emptyTitle">{activeAct.label}</div>
+								<div className="emptyText">No zones added yet.</div>
+							</div>
+						)}
+					</main>
+
+					{activeZone && (
+						<ZoneNav
+							activeIndex={activeZoneIndex}
+							totalZones={activeAct.zones.length}
+							isZoneDone={isZoneDone}
+							onPrev={() => setZoneIndex(activeZoneIndex - 1)}
+							onNext={() => setZoneIndex(activeZoneIndex + 1)}
+							onMarkDone={markZoneDone}
+						/>
+					)}
+				</>
 			)}
 
-			<GemsPanel act={activeActId} profile={profile} />
+			<GemsPanel act={activeActId} profile={profile} open={gemsOpen} onToggle={toggleGems} />
 		</div>
 	);
 }

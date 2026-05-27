@@ -8,6 +8,7 @@ declare global {
 			setWindowHeight: (height: number) => void;
 			setClientLogPath: (p: string | null) => Promise<string | null>;
 			getDefaultClientLogPath: () => Promise<string | null>;
+			pickClientLogPath: () => Promise<string | null>;
 			onZoneEntered: (cb: (name: string) => void) => () => void;
 		};
 	}

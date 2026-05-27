@@ -86,8 +86,7 @@
 .overlayTitle {
 	font-size: var(--font-sm);
 	font-weight: 700;
-	text-transform: uppercase;
-	letter-spacing: 0.12em;
+	letter-spacing: 0.04em;
 	color: var(--text-gold);
 }
 

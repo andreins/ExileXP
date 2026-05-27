@@ -15,7 +15,7 @@ export const monkContent: ProfileContent = {
 	// clearfell — Replace
 	"clearfell": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L1–2. League drop: {item:Orb of Transmutation} — use on weapon or Ring/Amulet." },
+			{ type: "info", text: "League drop: {item:Orb of Transmutation} — use on weapon or Ring/Amulet." },
 		],
 		tasks: [
 			{ id: "monk-clearfell-campsite-gem", text: "Open {item:Abandoned Stash} at the {loc:Mysterious Campsite} for the Lv1 Uncut Skill Gem" },
@@ -28,7 +28,7 @@ export const monkContent: ProfileContent = {
 	// the-grelwood — Replace + port find-una
 	"the-grelwood": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L2–3. League drop: {item:Orb of Transmutation} — use on weapon or Ring/Amulet." },
+			{ type: "info", text: "League drop: {item:Orb of Transmutation} — use on weapon or Ring/Amulet." },
 		],
 		tasks: [
 			{ id: "act1-the-grelwood-find-una", text: "Find/talk {npc:Una}, take Waypoint" },
@@ -47,7 +47,7 @@ export const monkContent: ProfileContent = {
 	// the-red-vale — Replace + port rust-king tip + return-town
 	"the-red-vale": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L4–5. Great EXP zone — aim for L4–5 before leaving. Reset if no {item:Long Quarterstaff} upgrade drops." },
+			{ type: "info", text: "Great EXP zone — aim for L4–5 before leaving. Reset if no {item:Long Quarterstaff} upgrade drops." },
 		],
 		tasks: [
 			{ id: "monk-red-vale-refined-arms", text: "Click every {item:Refined Arms} — looking for {item:Long Quarterstaff} or other tier upgrade" },
@@ -66,7 +66,7 @@ export const monkContent: ProfileContent = {
 	// grim-tangle — Replace + port enter-cemetery nav
 	"grim-tangle": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L5. Move quickly — next zone is great for EXP. League drop: Lv3 Uncut Skill Gem → use for {item:Wing Blast}." },
+			{ type: "info", text: "Move quickly — next zone is great for EXP. League drop: Lv3 Uncut Skill Gem → use for {item:Wing Blast}." },
 		],
 		tasks: [
 			{ id: "monk-grim-tangle-rush-exit", text: "Move to exit ASAP — kill only what is necessary" },
@@ -82,7 +82,7 @@ export const monkContent: ProfileContent = {
 	"cemetery-of-the-eternals": {
 		notes: [
 			{ type: "tip", text: "Routing: Do Draven first (Asinia scales to zone level → better drops). Or: Tomb of the Consort first — lower area level (easier off-league start)." },
-			{ type: "info", text: "Monk target on exit: L6. Good EXP zone. League drop: {item:Regal Orb} — use on a {item:Gothic Quarterstaff}." },
+			{ type: "info", text: "Good EXP zone. League drop: {item:Regal Orb} — use on a {item:Gothic Quarterstaff}." },
 		],
 		tasks: [
 			{ id: "act1-cemetery-talk-lachlann", text: "Talk to {npc:Lachlann the Lost}" },
@@ -123,7 +123,7 @@ export const monkContent: ProfileContent = {
 	"hunting-grounds": {
 		notes: [
 			{ type: "patch", text: "0.5 Pathing: trail of locusts leads to Freythorn entrance. Crowbells leave blood trails that lead to boss. Signpost on road indicates way to Ogham Village." },
-			{ type: "info", text: "Monk target on exit: L9. League drop: {item:Exalted Orb} — definitely complete this." },
+			{ type: "info", text: "League drop: {item:Exalted Orb} — definitely complete this." },
 		],
 		tasks: [
 			{ id: "act1-hunting-grounds-talk-delwyn", text: "Talk to {npc:Delwyn}" },
@@ -145,7 +145,7 @@ export const monkContent: ProfileContent = {
 	"freythorn": {
 		notes: [
 			{ type: "tip", text: "Big altar's smoke tendrils point to the small altars — follow them" },
-			{ type: "info", text: "Monk target on exit: L9–10. League drop: Tier 1 Support Gem." },
+			{ type: "info", text: "League drop: Tier 1 Support Gem." },
 		],
 		tasks: [
 			{ id: "monk-freythorn-ritual-circles", text: "Find and complete all 3 normal {loc:Ritual Circles} before activating the giant Altar" },
@@ -162,7 +162,7 @@ export const monkContent: ProfileContent = {
 	// ogham-farmlands — Replace + port deliver-lute tip
 	"ogham-farmlands": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L10. League drop: Lv4 Uncut Skill Gem." },
+			{ type: "info", text: "League drop: Lv4 Uncut Skill Gem." },
 		],
 		tasks: [
 			{
@@ -208,7 +208,7 @@ export const monkContent: ProfileContent = {
 	// manor-ramparts — Replace + port flask/chest gear-check tip
 	"manor-ramparts": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L12. Good EXP zone — take a good bit here. League drop: Lv5 Uncut Skill Gem." },
+			{ type: "info", text: "Good EXP zone — take a good bit here. League drop: Lv5 Uncut Skill Gem." },
 		],
 		tasks: [
 			{
@@ -227,7 +227,7 @@ export const monkContent: ProfileContent = {
 	// ogham-manor — Replace + port boss tips + post-fight nav
 	"ogham-manor": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L13–14. League drop: {item:Orb of Alchemy}." },
+			{ type: "info", text: "League drop: {item:Orb of Alchemy}." },
 		],
 		tasks: [
 			{
@@ -260,7 +260,7 @@ export const monkContent: ProfileContent = {
 	// vastiri-outskirts — Replace + port hooded-one talk + tp-start
 	"vastiri-outskirts": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L14. League drop: {item:Exalted Orb} — complete it. NPC camp with 2 NPCs fending off Hyenas gives solid Gold." },
+			{ type: "info", text: "League drop: {item:Exalted Orb} — complete it. NPC camp with 2 NPCs fending off Hyenas gives solid Gold." },
 		],
 		tasks: [
 			{ id: "act2-vastiri-outskirts-talk-hooded-one", text: "Talk to {npc:The Hooded One}", required: true },
@@ -278,7 +278,7 @@ export const monkContent: ProfileContent = {
 	// mawdun-quarry — Replace + port war-cache
 	"mawdun-quarry": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L14–15. Monsters here have higher chance at {item:Armorer's Scrap} and {item:Blacksmith's Whetstones} — stock up. League drop: Lv5 Uncut Spirit Gem (don't hunt it down)." },
+			{ type: "info", text: "Monsters here have higher chance at {item:Armorer's Scrap} and {item:Blacksmith's Whetstones} — stock up. League drop: Lv5 Uncut Spirit Gem (don't hunt it down)." },
 		],
 		tasks: [
 			{ id: "act2-mawdun-quarry-war-cache", text: "{item:Faridun War Cache} near checkpoint", optional: true, rewards: [{ text: "Artificer's Orb", kind: "craft" }] },
@@ -291,7 +291,7 @@ export const monkContent: ProfileContent = {
 	// mawdun-mine — Replace + port talk-risu + tp-town
 	"mawdun-mine": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L15. League drop: Tier 2 Support Gem — pick up for {item:Brink I} on {item:Wind Blast}." },
+			{ type: "info", text: "League drop: Tier 2 Support Gem — pick up for {item:Brink I} on {item:Wind Blast}." },
 		],
 		tasks: [
 			{ id: "act2-mawdun-mine-kill-rudja", text: "Kill {boss:Rudja}", required: true, boss: true },
@@ -306,7 +306,7 @@ export const monkContent: ProfileContent = {
 	"traitors-passage": {
 		notes: [
 			{ type: "patch", text: "0.5 Pathing: Interact with the {item:Ancient Seal} door to open a shortcut — follow torches through to {loc:Halani Gates} faster." },
-			{ type: "info", text: "Monk target on exit: L16–17. EXP is hard to maintain early Act 2 — take what you can. League drop: {item:Artificer's Orb}." },
+			{ type: "info", text: "EXP is hard to maintain early Act 2 — take what you can. League drop: {item:Artificer's Orb}." },
 		],
 		tasks: [
 			{ id: "act2-traitors-passage-runic-seals", text: "Interact with {item:Ancient Seal} door + {item:Runic Seals}", required: true },
@@ -327,7 +327,7 @@ export const monkContent: ProfileContent = {
 	// the-halani-gates — Replace + port summon-asala + kill-jamanra + checkpoint
 	"the-halani-gates": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L18. League drop: {item:Exalted Orb}. Ascendancy option: complete Trial of Sekhemas right after this zone for early 'I am the Thunder…' buff. Most players wait until after Spires of Deshar." },
+			{ type: "info", text: "League drop: {item:Exalted Orb}. Ascendancy option: complete Trial of Sekhemas right after this zone for early 'I am the Thunder…' buff. Most players wait until after Spires of Deshar." },
 		],
 		tasks: [
 			{
@@ -348,7 +348,7 @@ export const monkContent: ProfileContent = {
 		notes: [
 			{ type: "warning", text: "Run BEFORE Keth for proper level scaling" },
 			{ type: "patch", text: "0.5 Pathing: Follow ground cracks on the floor — they lead to {loc:Lightless Caverns} and the entrance to {loc:The Bone Pits}." },
-			{ type: "info", text: "Monk target on exit: L19–20. Complete Abyss encounters in any Act 2 zone for bonus EXP. League drop: {item:Regal Orb}." },
+			{ type: "info", text: "Complete Abyss encounters in any Act 2 zone for bonus EXP. League drop: {item:Regal Orb}." },
 		],
 		tasks: [
 			{ id: "act2-mastodon-badlands-effigy", text: "Effigy near checkpoint", optional: true, rewards: [{ text: "Support Gem Lv2", kind: "gem" }] },
@@ -368,7 +368,7 @@ export const monkContent: ProfileContent = {
 	// the-bone-pits — Replace + port goliath-relic tip
 	"the-bone-pits": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L20. Kill Hyena packs for {item:Sun Clan Relic} (needed for permanent buff in Valley of Titans). League drop: {item:Exalted Orb} — hunt it down." },
+			{ type: "info", text: "Kill Hyena packs for {item:Sun Clan Relic} (needed for permanent buff in Valley of Titans). League drop: {item:Exalted Orb} — hunt it down." },
 		],
 		tasks: [
 			{
@@ -387,7 +387,7 @@ export const monkContent: ProfileContent = {
 	// keth — Replace + port kabala-relic + kill-kabala with rewards + enter-lost-city
 	"keth": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L20–21. League drop: {item:Gemcutter's Prism} — hunt it down. Kill snake monsters for {item:Kabala Clan Relic}." },
+			{ type: "info", text: "League drop: {item:Gemcutter's Prism} — hunt it down. Kill snake monsters for {item:Kabala Clan Relic}." },
 		],
 		tasks: [
 			{ id: "act2-keth-kabala-relic", text: "Kill snakes until {item:Kabala Clan Relic} drops", required: true, rewards: [{ text: "Kabala Clan Relic", kind: "default" }] },
@@ -408,7 +408,7 @@ export const monkContent: ProfileContent = {
 	// the-lost-city — Replace + port ninth-treasure + golden-tomb + nav
 	"the-lost-city": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L21. Take good EXP here. League drop: {item:Orb of Alchemy}." },
+			{ type: "info", text: "Take good EXP here. League drop: {item:Orb of Alchemy}." },
 		],
 		tasks: [
 			{ id: "act2-lost-city-ninth-treasure", text: "Kill {boss:Ninth Treasure of Keth}", optional: true, boss: true },
@@ -421,7 +421,7 @@ export const monkContent: ProfileContent = {
 	// buried-shrines — Replace (monk content is more detailed) + add nav-out
 	"buried-shrines": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L21–22. #1 Priority: League Mechanic gives {item:Lesser Jeweler's Orb} — use on {item:Falling Thunder}." },
+			{ type: "info", text: "#1 Priority: League Mechanic gives {item:Lesser Jeweler's Orb} — use on {item:Falling Thunder}." },
 		],
 		tasks: [
 			{ id: "monk-buried-shrines-league-jeweler", text: "PRIORITY: Complete League Mechanic for {item:Lesser Jeweler's Orb} — use on {item:Falling Thunder}", rewards: [{ text: "Lesser Jeweler's Orb", kind: "craft" }] },
@@ -436,7 +436,7 @@ export const monkContent: ProfileContent = {
 	// valley-of-the-titans — Replace + port both base tasks
 	"valley-of-the-titans": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L23. League drop: Unique — hunt it down. Hug outer walls to find the 3 Ancient Seals." },
+			{ type: "info", text: "League drop: Unique — hunt it down. Hug outer walls to find the 3 Ancient Seals." },
 		],
 		tasks: [
 			{ id: "act2-valley-ancient-seals", text: "Find 3 {item:Ancient Seals} (perimeter)", required: true },
@@ -456,7 +456,7 @@ export const monkContent: ProfileContent = {
 	// the-titan-grotto — Replace + port kill-zalmarath
 	"the-titan-grotto": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L23–24. Get {item:Siphoning Strike} before this fight — Boss has high Stun Threshold. League drop: {item:Chance Shard} (skip unless needed)." },
+			{ type: "info", text: "Get {item:Siphoning Strike} before this fight — Boss has high Stun Threshold. League drop: {item:Chance Shard} (skip unless needed)." },
 		],
 		tasks: [
 			{ id: "monk-titan-grotto-siphoning-strike", text: "Equip {item:Siphoning Strike} before the Boss — essential for Power Charge generation against {boss:Zalmarath, the Colossus}' Stun Threshold" },
@@ -473,7 +473,7 @@ export const monkContent: ProfileContent = {
 	// Base wording is preferred (curated for 0.5). Both are included as base task + monk note.
 	"deshar": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L25. League drop: Lesser Rune (skip unless needing EXP)." },
+			{ type: "info", text: "League drop: Lesser Rune (skip unless needing EXP)." },
 		],
 		tasks: [
 			{ id: "act2-deshar-fallen-dekhara", text: "Find {item:Fallen Dekhara} near tower", required: true, rewards: [{ text: "+2 Skill Points", kind: "perm" }] },
@@ -495,7 +495,7 @@ export const monkContent: ProfileContent = {
 	// path-of-mourning — Replace + port enter-spires nav
 	"path-of-mourning": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L25. Move to exit quickly — poor EXP. No League Mechanic reward in this zone." },
+			{ type: "info", text: "Move to exit quickly — poor EXP. No League Mechanic reward in this zone." },
 		],
 		tasks: [
 			{ id: "monk-path-mourning-rush", text: "Rush to exit — there is very little to do and EXP is poor" },
@@ -508,7 +508,7 @@ export const monkContent: ProfileContent = {
 	"spires-of-deshar": {
 		notes: [
 			{ type: "warning", text: "Cap lightning resistance before Tor Gul — one of the hardest fights in Act II" },
-			{ type: "info", text: "Monk target on exit: L26. League drop: {item:Gemcutter's Prism} — find it. Good EXP zone." },
+			{ type: "info", text: "League drop: {item:Gemcutter's Prism} — find it. Good EXP zone." },
 		],
 		tasks: [
 			{ id: "act2-spires-sisters-shrine", text: "Interact with {item:Sisters of Garukhan} shrine", required: true, rewards: [{ text: "+10% Lightning Res", kind: "perm" }] },
@@ -525,7 +525,7 @@ export const monkContent: ProfileContent = {
 		notes: [
 			{ type: "tip", text: "~55k phys damage stuns before lightning fence phase" },
 			{ type: "patch", text: "0.5 Change: The second Dreadnought area has been removed — fight proceeds directly to {boss:Jamanra} after boarding." },
-			{ type: "info", text: "Monk target on exit: L28–29. Great zone to catch up on EXP. No League Mechanic reward." },
+			{ type: "info", text: "Great zone to catch up on EXP. No League Mechanic reward." },
 		],
 		tasks: [
 			{ id: "monk-dreadnought-exp-catchup", text: "Take large amounts of EXP throughout — great catch-up zone, few Checkpoints" },
@@ -546,7 +546,7 @@ export const monkContent: ProfileContent = {
 	"sandswept-marsh": {
 		notes: [
 			{ type: "patch", text: "0.5 rearranged Act 3's area order — zone transitions below reflect the updated 0.5 layout" },
-			{ type: "info", text: "Monk target on exit: L30. League drop: Tier 3 Support Gem → use for {item:Branching Fissures I}." },
+			{ type: "info", text: "League drop: Tier 3 Support Gem → use for {item:Branching Fissures I}." },
 		],
 		tasks: [
 			{ id: "act3-sandswept-marsh-talk-hooded-one", text: "Talk to {npc:The Hooded One}", required: true },
@@ -565,7 +565,7 @@ export const monkContent: ProfileContent = {
 	"jungle-ruins": {
 		notes: [
 			{ type: "patch", text: "0.5 Pathing: explorer camps now point you toward the next area, and the destination is revealed on your minimap" },
-			{ type: "info", text: "Monk target on exit: L31. League drop: {item:Orb of Alchemy}. Multiple optional objectives — do them efficiently before heading to Venom Crypts." },
+			{ type: "info", text: "League drop: {item:Orb of Alchemy}. Multiple optional objectives — do them efficiently before heading to Venom Crypts." },
 		],
 		tasks: [
 			{
@@ -588,7 +588,7 @@ export const monkContent: ProfileContent = {
 	// infested-barrens — Replace + port heavy
 	"infested-barrens": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L32. League drop: {item:Exalted Orb} — complete it. Looking for entrance to The Azak Bog." },
+			{ type: "info", text: "League drop: {item:Exalted Orb} — complete it. Looking for entrance to The Azak Bog." },
 		],
 		tasks: [
 			{ id: "act3-infested-barrens-find-alva", text: "Find/talk {npc:Alva}, take WP near her" },
@@ -604,7 +604,7 @@ export const monkContent: ProfileContent = {
 	// venom-crypts — Replace + port sarcophagus + loot-venom (using base wording) + tp-town
 	"venom-crypts": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L31–32. Pick up permanent buff from Corpse-snake Venom — take Stun Threshold option (recommended for Monk). League drop: Magic Ring." },
+			{ type: "info", text: "Pick up permanent buff from Corpse-snake Venom — take Stun Threshold option (recommended for Monk). League drop: Magic Ring." },
 		],
 		tasks: [
 			{ id: "act3-venom-crypts-sarcophagus", text: "Sarcophagus event", optional: true, rewards: [{ text: "Guaranteed Lv3 Support", kind: "gem" }] },
@@ -622,7 +622,7 @@ export const monkContent: ProfileContent = {
 	// chimeral-wetlands — Replace + port heavy
 	"chimeral-wetlands": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L34. League drop: Lv9 Uncut Skill Gem. Collect {item:Chimeral Inscribed Ultimatum} for Temple of Chaos Ascendancy Trial." },
+			{ type: "info", text: "League drop: Lv9 Uncut Skill Gem. Collect {item:Chimeral Inscribed Ultimatum} for Temple of Chaos Ascendancy Trial." },
 		],
 		tasks: [
 			{ id: "act3-chimeral-field-vendor", text: "Field vendor", optional: true, rewards: [{ text: "Guaranteed Rare Helm", kind: "default" }] },
@@ -647,7 +647,7 @@ export const monkContent: ProfileContent = {
 	"jiquanis-machinarium": {
 		notes: [
 			{ type: "tip", text: "Layout = squared U-shape, generators at opposite tips" },
-			{ type: "info", text: "Monk target on exit: L35. League drop: {item:Artificer's Orb}. Head left or right for Small Soul Core to unlock the door maze." },
+			{ type: "info", text: "League drop: {item:Artificer's Orb}. Head left or right for Small Soul Core to unlock the door maze." },
 		],
 		tasks: [
 			{ id: "act3-machinarium-summon-alva", text: "Summon/talk {npc:Alva}" },
@@ -669,7 +669,7 @@ export const monkContent: ProfileContent = {
 	// [verify in 0.5]: base says "Medium Soul Cores" go into generators; monk guide says "Large Soul Cores". Using base wording.
 	"jiquanis-sanctum": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L35–36. League drop: {item:Exalted Orb}. Note: generators take Medium Soul Cores — Large Soul Core spawns at start after killing Zicoatly." },
+			{ type: "info", text: "League drop: {item:Exalted Orb}. Note: generators take Medium Soul Cores — Large Soul Core spawns at start after killing Zicoatly." },
 		],
 		tasks: [
 			{ id: "act3-sanctum-talk-alva", text: "Summon/talk {npc:Alva}" },
@@ -687,7 +687,7 @@ export const monkContent: ProfileContent = {
 	"matlan-waterways": {
 		notes: [
 			{ type: "patch", text: "0.5 QoL: Levers became walk-over pressure pads, final canal section ships pre-drained — old portal-skip no longer needed" },
-			{ type: "info", text: "Monk target on exit: L36. League drop: Lv10 Uncut Spirit Gem." },
+			{ type: "info", text: "League drop: Lv10 Uncut Spirit Gem." },
 		],
 		tasks: [
 			{ id: "act3-matlan-hut", text: "Hut → kill rare", optional: true, rewards: [{ text: "Random loot", kind: "optional" }] },
@@ -700,7 +700,7 @@ export const monkContent: ProfileContent = {
 	// the-drowned-city — Replace + port nav tasks
 	"the-drowned-city": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L36–37. League drop: Tier 3 Support Gem. Find entrances to The Molten Vault and Apex of Filth." },
+			{ type: "info", text: "League drop: Tier 3 Support Gem. Find entrances to The Molten Vault and Apex of Filth." },
 		],
 		tasks: [
 			{ id: "act3-drowned-city-apex-wp", text: "Find {loc:Apex of Filth} → take WP → return" },
@@ -715,7 +715,7 @@ export const monkContent: ProfileContent = {
 		notes: [
 			{ type: "tip", text: "Boss arena always top-right; reset and farm magic packs around fire shrine for XP" },
 			{ type: "tip", text: "Recommended Servi buff pick for Monk (from earlier Venom Crypts visit): +25% Stun Threshold." },
-			{ type: "info", text: "Monk target on exit: L33. Key zone — Ignagduk drops +30 Spirit + Lv10 Spirit Gem. Use Flameskin Ritual for efficient EXP respawns. League drop: Rune (skip unless nearby)." },
+			{ type: "info", text: "Key zone — Ignagduk drops +30 Spirit + Lv10 Spirit Gem. Use Flameskin Ritual for efficient EXP respawns. League drop: Rune (skip unless nearby)." },
 		],
 		tasks: [
 			{ id: "act3-azak-bog-talk-servi", text: "Summon/talk {npc:Servi}" },
@@ -736,7 +736,7 @@ export const monkContent: ProfileContent = {
 	// molten-vault — Replace + port kill-mektul + return-hammer + tp-town
 	"molten-vault": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L36–37. League drop: random Unique — kill for it. Kill {boss:Mektul, the Forgemaster} for the {item:Hammer of Kamasa} quest item." },
+			{ type: "info", text: "League drop: random Unique — kill for it. Kill {boss:Mektul, the Forgemaster} for the {item:Hammer of Kamasa} quest item." },
 		],
 		tasks: [
 			{
@@ -757,7 +757,7 @@ export const monkContent: ProfileContent = {
 	"apex-of-filth": {
 		notes: [
 			{ type: "tip", text: "Pass through bottleneck-with-checkpoint, then check the back corners" },
-			{ type: "info", text: "Monk target on exit: L38. League drop: {item:Vaal Orb}." },
+			{ type: "info", text: "League drop: {item:Vaal Orb}." },
 		],
 		tasks: [
 			{ id: "act3-apex-mushrooms", text: "Find 3 Mushrooms → use Cauldron", optional: true, rewards: [{ text: "Superior Flasks", kind: "optional" }] },
@@ -780,7 +780,7 @@ export const monkContent: ProfileContent = {
 	"temple-of-kopec": {
 		notes: [
 			{ type: "tip", text: "Each floor is a triangle — far corner has 50% chance of being correct. Always check it first." },
-			{ type: "info", text: "Monk target on exit: L38–39. League drop: Lv11 Uncut Spirit Gem. Avoid the giant sun in the middle of the zone." },
+			{ type: "info", text: "League drop: Lv11 Uncut Spirit Gem. Avoid the giant sun in the middle of the zone." },
 		],
 		tasks: [
 			{ id: "monk-temple-kopec-avoid-sun", text: "Avoid the giant sun in the middle of the zone — it deals massive damage" },
@@ -795,7 +795,7 @@ export const monkContent: ProfileContent = {
 	"utzaal": {
 		notes: [
 			{ type: "tip", text: "Same layout as Drowned City. Follow the paved road — it leads to Viper" },
-			{ type: "info", text: "Monk target on exit: L39–40. League drop: random Jewel. Kill Vaal Goliaths (canister on shoulder) for {item:Sacrificial Heart} quest item." },
+			{ type: "info", text: "League drop: random Jewel. Kill Vaal Goliaths (canister on shoulder) for {item:Sacrificial Heart} quest item." },
 		],
 		tasks: [
 			{ id: "act3-utzaal-follow-road", text: "Follow paved road" },
@@ -825,7 +825,7 @@ export const monkContent: ProfileContent = {
 	"aggorat": {
 		notes: [
 			{ type: "tip", text: "Town crier chanting tells you the right direction. Edge of pyramid = boss." },
-			{ type: "info", text: "Monk target on exit: L40–41. League drop: Vaal Orb or Lv11 Skill Gem (verify in 0.5)." },
+			{ type: "info", text: "League drop: Vaal Orb or Lv11 Skill Gem (verify in 0.5)." },
 		],
 		tasks: [
 			{ id: "act3-aggorat-sacrificial-altar", text: "Find {item:Sacrificial Altar} (top right of map)", required: true },
@@ -843,7 +843,7 @@ export const monkContent: ProfileContent = {
 	// black-chambers — Replace + port Doryani phase-2 + post-fight sequence
 	"black-chambers": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L41–42. League drop: {item:Vaal Orb}. Head to the opposite end for {boss:Doryani, Royal Thaumaturge} — then proceed through the portal back to Town." },
+			{ type: "info", text: "League drop: {item:Vaal Orb}. Head to the opposite end for {boss:Doryani, Royal Thaumaturge} — then proceed through the portal back to Town." },
 		],
 		tasks: [
 			{
@@ -873,7 +873,7 @@ export const monkContent: ProfileContent = {
 	// isle-of-kin — Replace + port mimok + flayed-sailor + blind-beast + enter-warrens
 	"isle-of-kin": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L44. League drop: {item:Gemcutter's Prism} — complete it. Multiple optional objectives." },
+			{ type: "info", text: "League drop: {item:Gemcutter's Prism} — complete it. Multiple optional objectives." },
 		],
 		tasks: [
 			{ id: "act4-isle-of-kin-flayed-sailor", text: "{item:Flayed Sailor} near shore", optional: true, rewards: [{ text: "Torn Map 3/4", kind: "optional" }] },
@@ -888,7 +888,7 @@ export const monkContent: ProfileContent = {
 	// kedge-bay — Replace + port Dead Man's Chest
 	"kedge-bay": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L42–43. League drop: {item:Exalted Orb} — complete it. Not much in this zone — move quickly and take EXP when needed." },
+			{ type: "info", text: "League drop: {item:Exalted Orb} — complete it. Not much in this zone — move quickly and take EXP when needed." },
 		],
 		tasks: [
 			{
@@ -908,7 +908,7 @@ export const monkContent: ProfileContent = {
 	// Prefer base wording "Harlin" per plan instructions. Note: talk-freya uses base "Freya Hartlin" for the NPC name.
 	"journeys-end": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L43. League drop: {item:Orb of Alchemy}. Talk to {npc:Freya} and {npc:Tujen} first — then kill {boss:Captain Harlin} for Verisium." },
+			{ type: "info", text: "League drop: {item:Orb of Alchemy}. Talk to {npc:Freya} and {npc:Tujen} first — then kill {boss:Captain Harlin} for Verisium." },
 		],
 		tasks: [
 			{ id: "act4-journeys-end-talk-tujen", text: "Talk to {npc:Tujen}" },
@@ -931,7 +931,7 @@ export const monkContent: ProfileContent = {
 	// volcanic-warrens — Replace + port magma-twins kill-order + krutog + matiki + tp
 	"volcanic-warrens": {
 		notes: [
-			{ type: "info", text: "Monk target on exit: L44–45. League drop: Tier 4 Support Gem. Find the Volcanic Nest Secret Area." },
+			{ type: "info", text: "League drop: Tier 4 Support Gem. Find the Volcanic Nest Secret Area." },
 		],
 		tasks: [
 			{

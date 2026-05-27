@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld("overlay", {
 	setWindowHeight: (height: number) => ipcRenderer.send("overlay:set-height", height),
 	setClientLogPath: (p: string | null) => ipcRenderer.invoke("overlay:set-client-log-path", p),
 	getDefaultClientLogPath: () => ipcRenderer.invoke("overlay:get-default-client-log-path"),
+	pickClientLogPath: () => ipcRenderer.invoke("overlay:pick-client-log-path"),
 	onZoneEntered: (cb: (name: string) => void) => {
 		const handler = (_event: unknown, name: string) => cb(name);
 		ipcRenderer.on("overlay:zone-entered", handler);
