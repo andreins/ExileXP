@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import type { ActId } from "./types/guide";
 import { guide } from "./data/acts/index";
@@ -85,16 +85,16 @@ function App() {
 		return window.overlay?.onClickThroughChanged((value) => setClickThrough(value));
 	}, []);
 
-	useEffect(() => {
+	// After every render, clamp the Electron window to the exact content height.
+	// useLayoutEffect (no deps) fires synchronously after each DOM commit, so the
+	// window stays pinned to content whether zones change, tasks are ticked, or the
+	// user manually dragged the resize handle between interactions.
+	useLayoutEffect(() => {
 		const el = appRef.current;
 		if (!el) return;
-		const observer = new ResizeObserver((entries) => {
-			const h = entries[0].contentRect.height;
-			window.overlay?.setWindowHeight(Math.ceil(h));
-		});
-		observer.observe(el);
-		return () => observer.disconnect();
-	}, []);
+		const h = el.offsetHeight;
+		if (h > 0) window.overlay?.setWindowHeight(h);
+	});
 
 	const toggleTask = (id: string) => {
 		setCompleted((c) => ({ ...c, [id]: !c[id] }));
