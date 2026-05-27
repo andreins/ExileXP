@@ -1,6 +1,13 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProfileId } from "../types/guide";
 import { profiles } from "../data/profiles/index";
+
+function formatAgo(at: number): string {
+	const s = Math.max(0, Math.round((Date.now() - at) / 1000));
+	if (s < 60) return `${s}s ago`;
+	if (s < 3600) return `${Math.round(s / 60)}m ago`;
+	return `${Math.round(s / 3600)}h ago`;
+}
 
 type Props = {
 	profile: ProfileId;
@@ -8,6 +15,7 @@ type Props = {
 	clientLogPath: string;
 	defaultClientLogPath: string;
 	currentZoneName: string | null;
+	lastDetectedZone: { name: string; at: number } | null;
 	onProfileChange: (p: ProfileId) => void;
 	onAutodetectChange: (v: "on" | "off") => void;
 	onClientLogPathChange: (p: string) => void;
@@ -22,6 +30,7 @@ export default function SettingsPanel({
 	clientLogPath,
 	defaultClientLogPath,
 	currentZoneName,
+	lastDetectedZone,
 	onProfileChange,
 	onAutodetectChange,
 	onClientLogPathChange,
@@ -32,6 +41,15 @@ export default function SettingsPanel({
 	const [toast, setToast] = useState<string | null>(null);
 	const [importText, setImportText] = useState("");
 	const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Force re-render every 5s so the "X ago" timestamp updates while the
+	// settings panel is open.
+	const [, setTick] = useState(0);
+	useEffect(() => {
+		if (!lastDetectedZone) return;
+		const id = setInterval(() => setTick((n) => n + 1), 5000);
+		return () => clearInterval(id);
+	}, [lastDetectedZone]);
 
 	function showToast(msg: string) {
 		if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -189,7 +207,7 @@ export default function SettingsPanel({
 			</div>
 
 			{/* Autodetect */}
-			<div className="settingsRow">
+			<div className="settingsRow settingsRow--column">
 				<label className="settingsCheckLabel">
 					<input
 						type="checkbox"
@@ -199,6 +217,16 @@ export default function SettingsPanel({
 					/>
 					<span className="settingsLabel">Autodetect zone</span>
 				</label>
+				{lastDetectedZone ? (
+					<span className="settingsMuted">
+						Last detected: <strong style={{ color: "var(--text-gold)" }}>{lastDetectedZone.name}</strong>
+						{" — "}{formatAgo(lastDetectedZone.at)}
+					</span>
+				) : (
+					<span className="settingsMuted">
+						No zone detected yet. Enter or re-enter a zone in PoE2 to verify the tail is working.
+					</span>
+				)}
 			</div>
 
 			{/* Path of Exile 2 folder */}
@@ -274,6 +302,36 @@ export default function SettingsPanel({
 				<button className="settingsDangerBtn settingsDangerBtn--all" onClick={handleResetAll}>
 					Reset everything
 				</button>
+			</div>
+
+			{/* Credits */}
+			<div className="settingsDivider" />
+			<div className="settingsRow settingsRow--column">
+				<span className="settingsLabel">Credits</span>
+				<span className="settingsMuted">
+					Monk leveling guide by{" "}
+					<a
+						className="settingsLink"
+						href="https://www.youtube.com/@FGKorbyn21"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						@FGKorbyn21
+					</a>
+					.
+				</span>
+				<span className="settingsMuted">
+					Base leveling guide derived from{" "}
+					<a
+						className="settingsLink"
+						href="https://domistae.github.io/poe2-leveling/"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						domistae's poe2-leveling
+					</a>
+					.
+				</span>
 			</div>
 		</div>
 	);

@@ -129,6 +129,14 @@ export const monkGems: ProfileGems = {
 
 	act4: act4Gems,
 
-	// Build doesn't change for the Interludes — reuse the Act 4 gem setup.
-	interludes: act4Gems,
+	// Build doesn't change for the Interludes — keep the entry minimal.
+	interludes: {
+		skills: [],
+		sections: [
+			{
+				kind: "note",
+				body: "No skill gem changes from {item:Act 4}. Keep the Whirling Assault swap setup intact through the Interludes.",
+			},
+		],
+	},
 };

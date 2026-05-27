@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen } from "electron";
+import { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen, shell } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,6 +69,15 @@ function createWindow() {
 
 	win.setAlwaysOnTop(true, "screen-saver");
 	win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+	// External http(s) links (e.g. Credits in Settings) open in the user's
+	// default browser instead of a new Electron window.
+	win.webContents.setWindowOpenHandler(({ url }) => {
+		if (url.startsWith("http://") || url.startsWith("https://")) {
+			shell.openExternal(url);
+		}
+		return { action: "deny" };
+	});
 
 	// Block user drag-resize by setting min == max to the current size.
 	// Updated whenever the IPC handler resizes the window.

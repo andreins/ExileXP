@@ -115,28 +115,12 @@ function App() {
 	// ── Settings panel ────────────────────────────────────────────────────
 	const [settingsOpen, setSettingsOpen] = useState(false);
 
-	// ── Gems panel (open/closed per profile + act, persisted) ─────────────
-	const gemsStorageKey = (p: ProfileId, a: ActId) => `poe2-overlay-gems-open:${p}:${a}`;
+	// ── Gems panel (always starts closed on profile/act swap, no persistence) ──
 	const [gemsOpen, setGemsOpen] = useState<boolean>(false);
 	useEffect(() => {
-		try {
-			const raw = localStorage.getItem(gemsStorageKey(profile, activeActId));
-			setGemsOpen(raw === "true");
-		} catch {
-			setGemsOpen(false);
-		}
+		setGemsOpen(false);
 	}, [profile, activeActId]);
-	const toggleGems = () => {
-		setGemsOpen((prev) => {
-			const next = !prev;
-			try {
-				localStorage.setItem(gemsStorageKey(profile, activeActId), String(next));
-			} catch {
-				/* ignore */
-			}
-			return next;
-		});
-	};
+	const toggleGems = () => setGemsOpen((prev) => !prev);
 
 	// ── Click-through ─────────────────────────────────────────────────────
 	const [clickThrough, setClickThrough] = useState(false);
@@ -249,9 +233,16 @@ function App() {
 	}, [profile, guide]);
 
 	// ── Autodetect zone subscription ──────────────────────────────────────
+	// `lastDetectedZone` is recorded for every Client.txt zone-entered event,
+	// matched or not, so the Settings panel can show the user that the tail
+	// is actually running (and what raw zone name PoE2 wrote, for debugging).
+	const [lastDetectedZone, setLastDetectedZone] = useState<{ name: string; at: number } | null>(null);
 	useEffect(() => {
-		if (autodetect !== "on") return;
+		// We always record the last detected zone for diagnostics, but only
+		// auto-switch the overlay when autodetect is on.
 		const unsub = window.overlay?.onZoneEntered((name) => {
+			setLastDetectedZone({ name, at: Date.now() });
+			if (autodetect !== "on") return;
 			const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 			const hit = zoneIndex.get(normalize(name));
 			if (!hit) return; // hideout, side area, town — silently ignore
@@ -380,6 +371,7 @@ function App() {
 					clientLogPath={clientLogPath}
 					defaultClientLogPath={defaultClientLogPath}
 					currentZoneName={activeZone?.name ?? null}
+					lastDetectedZone={lastDetectedZone}
 					onProfileChange={handleProfileChange}
 					onAutodetectChange={setAutodetect}
 					onClientLogPathChange={handleClientLogPathChange}

@@ -114,28 +114,12 @@ type Props = {
 export default function GemsPanel({ act, profile, open, onToggle }: Props) {
 	// Hooks must run unconditionally — even when gems data is absent — to keep
 	// hook order stable across profile/act changes.
-	const sectionsKey = `poe2-overlay-gems-sections-open:${profile}:${act}`;
 	const [sectionsOpen, setSectionsOpen] = useState<boolean>(false);
 	useEffect(() => {
-		try {
-			const raw = localStorage.getItem(sectionsKey);
-			setSectionsOpen(raw === "true"); // default collapsed
-		} catch {
-			setSectionsOpen(false);
-		}
-	}, [sectionsKey]);
+		setSectionsOpen(false);
+	}, [profile, act]);
 
-	const toggleSections = () => {
-		setSectionsOpen((prev) => {
-			const next = !prev;
-			try {
-				localStorage.setItem(sectionsKey, String(next));
-			} catch {
-				/* ignore */
-			}
-			return next;
-		});
-	};
+	const toggleSections = () => setSectionsOpen((prev) => !prev);
 
 	const gems = profileMap[profile]?.gems?.[act];
 	if (!gems) return null;
@@ -159,37 +143,48 @@ export default function GemsPanel({ act, profile, open, onToggle }: Props) {
 					{gems.title && (
 						<div className="gemsPanel__banner">{gems.title}</div>
 					)}
-					{gems.requirements && (
+					{gems.requirements && gems.skills.length > 0 && (
 						<RequirementsRow req={gems.requirements} />
 					)}
 
-					<div className="gemsPanel__grid">
-						{gems.skills.map((gem) => (
-							<GemCard key={gem.slot} gem={gem} />
-						))}
-					</div>
+					{gems.skills.length > 0 && (
+						<div className="gemsPanel__grid">
+							{gems.skills.map((gem) => (
+								<GemCard key={gem.slot} gem={gem} />
+							))}
+						</div>
+					)}
 
 					{gems.sections.length > 0 && (
-						<>
-							<button
-								type="button"
-								className="gemsPanel__sectionsToggle"
-								onClick={toggleSections}
-								aria-expanded={sectionsOpen}
-							>
-								<span>{sectionsOpen ? "Hide notes" : "Show notes"}</span>
-								<span className={`gemsPanel__chevron${sectionsOpen ? " gemsPanel__chevron--open" : ""}`}>
-									▾
-								</span>
-							</button>
-							{sectionsOpen && (
-								<div className="gemsPanel__sections">
-									{gems.sections.map((section, i) => (
-										<GemSection key={i} section={section} />
-									))}
-								</div>
-							)}
-						</>
+						gems.skills.length === 0 ? (
+							// No gems to show — render notes inline without a toggle wrapper.
+							<div className="gemsPanel__sections">
+								{gems.sections.map((section, i) => (
+									<GemSection key={i} section={section} />
+								))}
+							</div>
+						) : (
+							<>
+								<button
+									type="button"
+									className="gemsPanel__sectionsToggle"
+									onClick={toggleSections}
+									aria-expanded={sectionsOpen}
+								>
+									<span>{sectionsOpen ? "Hide notes" : "Show notes"}</span>
+									<span className={`gemsPanel__chevron${sectionsOpen ? " gemsPanel__chevron--open" : ""}`}>
+										▾
+									</span>
+								</button>
+								{sectionsOpen && (
+									<div className="gemsPanel__sections">
+										{gems.sections.map((section, i) => (
+											<GemSection key={i} section={section} />
+										))}
+									</div>
+								)}
+							</>
+						)
 					)}
 				</div>
 			)}

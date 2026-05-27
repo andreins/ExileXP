@@ -740,6 +740,17 @@
 	color: var(--text-gold);
 }
 
+.settingsLink {
+	color: var(--text-gold);
+	text-decoration: underline;
+	cursor: pointer;
+	transition: color 0.15s;
+}
+
+.settingsLink:hover {
+	color: var(--text-gold-bright, #f5d99c);
+}
+
 /* ── Action buttons ───────────────────────────────────────── */
 .settingsActionBtn {
 	padding: 4px 10px;
