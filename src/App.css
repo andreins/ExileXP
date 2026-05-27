@@ -565,3 +565,532 @@
 	outline: 1px solid var(--accent-bronze);
 	outline-offset: 2px;
 }
+
+/* ── Header right button group ────────────────────────────── */
+.overlayHeaderRight {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	-webkit-app-region: no-drag;
+}
+
+/* ── Settings gear button ─────────────────────────────────── */
+.settingsBtn {
+	-webkit-app-region: no-drag;
+	width: 22px;
+	height: 22px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	line-height: 1;
+	color: var(--text-muted);
+	background: none;
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	padding: 0;
+	transition: color 0.15s, border-color 0.15s;
+}
+
+.settingsBtn:hover {
+	color: var(--text-gold);
+	border-color: var(--border-gold);
+}
+
+.settingsBtn--active {
+	color: var(--accent-bronze);
+	border-color: var(--border-gold);
+}
+
+/* ── Settings panel ───────────────────────────────────────── */
+.settingsPanel {
+	position: relative;
+	background: var(--bg-panel);
+	border-bottom: 1px solid var(--border-gold);
+	padding: 10px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	-webkit-app-region: no-drag;
+}
+
+.settingsRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.settingsRow--column {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.settingsRow--spaced {
+	justify-content: space-between;
+}
+
+.settingsLabel {
+	font-size: var(--font-sm);
+	color: var(--text-body);
+	font-weight: 500;
+}
+
+.settingsMuted {
+	font-size: var(--font-xs);
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.settingsCheckLabel {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+}
+
+.settingsCheckbox {
+	width: 13px;
+	height: 13px;
+	accent-color: var(--accent-bronze);
+	cursor: pointer;
+}
+
+/* ── Segmented control ────────────────────────────────────── */
+.settingsSegmented {
+	display: flex;
+	border: 1px solid var(--border-gold);
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+}
+
+.settingsSegBtn {
+	flex: 1;
+	padding: 3px 10px;
+	font-size: var(--font-xs);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-muted);
+	background: none;
+	border: none;
+	border-left: 1px solid var(--border-gold);
+	cursor: pointer;
+	transition: color 0.15s, background 0.15s;
+}
+
+.settingsSegBtn:first-child {
+	border-left: none;
+}
+
+.settingsSegBtn:hover {
+	color: var(--text-gold);
+	background: var(--bg-hover);
+}
+
+.settingsSegBtn--active {
+	color: var(--text-gold);
+	background: rgba(216, 155, 75, 0.18);
+}
+
+/* ── Path input ───────────────────────────────────────────── */
+.settingsPathRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+}
+
+.settingsInput {
+	flex: 1;
+	background: rgba(18, 13, 8, 0.6);
+	border: 1px solid var(--border-gold);
+	border-radius: var(--radius-sm);
+	color: var(--text-body);
+	font-size: var(--font-xs);
+	padding: 4px 7px;
+	font-family: inherit;
+	min-width: 0;
+}
+
+.settingsInput::placeholder {
+	color: var(--text-muted);
+	font-style: italic;
+}
+
+.settingsInput:focus {
+	outline: none;
+	border-color: var(--border-gold-bright);
+}
+
+/* ── Link button ──────────────────────────────────────────── */
+.settingsLinkBtn {
+	background: none;
+	border: none;
+	color: var(--text-muted);
+	font-size: var(--font-xs);
+	cursor: pointer;
+	padding: 0;
+	text-decoration: underline;
+	white-space: nowrap;
+	transition: color 0.15s;
+}
+
+.settingsLinkBtn:hover {
+	color: var(--text-gold);
+}
+
+/* ── Action buttons ───────────────────────────────────────── */
+.settingsActionBtn {
+	padding: 4px 10px;
+	font-size: var(--font-xs);
+	font-weight: 600;
+	color: var(--text-gold-bright);
+	background: rgba(80, 55, 28, 0.45);
+	border: 1px solid var(--border-gold);
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	letter-spacing: 0.03em;
+	transition: background 0.15s, border-color 0.15s;
+	white-space: nowrap;
+}
+
+.settingsActionBtn:hover:not(:disabled) {
+	background: rgba(80, 55, 28, 0.8);
+	border-color: var(--border-gold-bright);
+}
+
+.settingsActionBtn:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.settingsActionBtn--full {
+	width: 100%;
+	margin-top: 4px;
+}
+
+/* ── Textarea ─────────────────────────────────────────────── */
+.settingsTextarea {
+	width: 100%;
+	box-sizing: border-box;
+	background: rgba(18, 13, 8, 0.6);
+	border: 1px solid var(--border-gold);
+	border-radius: var(--radius-sm);
+	color: var(--text-body);
+	font-size: var(--font-xs);
+	padding: 5px 7px;
+	font-family: monospace;
+	resize: vertical;
+}
+
+.settingsTextarea::placeholder {
+	color: var(--text-muted);
+	font-style: italic;
+	font-family: inherit;
+}
+
+.settingsTextarea:focus {
+	outline: none;
+	border-color: var(--border-gold-bright);
+}
+
+/* ── Danger buttons ───────────────────────────────────────── */
+.settingsDangerBtn {
+	padding: 4px 8px;
+	font-size: var(--font-xs);
+	font-weight: 600;
+	color: #c68;
+	background: rgba(200, 100, 120, 0.08);
+	border: 1px solid rgba(200, 100, 120, 0.3);
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	letter-spacing: 0.03em;
+	transition: background 0.15s, border-color 0.15s;
+}
+
+.settingsDangerBtn:hover {
+	background: rgba(200, 100, 120, 0.18);
+	border-color: rgba(200, 100, 120, 0.6);
+}
+
+.settingsDangerBtn--all {
+	color: #e05555;
+	background: rgba(220, 70, 70, 0.1);
+	border-color: rgba(220, 70, 70, 0.35);
+}
+
+.settingsDangerBtn--all:hover {
+	background: rgba(220, 70, 70, 0.22);
+	border-color: rgba(220, 70, 70, 0.7);
+}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.settingsDivider {
+	height: 1px;
+	background: var(--border-subtle);
+	margin: 2px 0;
+}
+
+/* ── Gems panel ──────────────────────────────────────────── */
+.gemsPanel {
+	border-top: 1px solid var(--border-gold);
+	background: var(--bg-panel);
+	flex-shrink: 0;
+}
+
+.gemsPanel__header {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 7px 12px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--text-gold);
+	font-size: var(--font-sm);
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	transition: background 0.15s;
+	-webkit-app-region: no-drag;
+}
+
+.gemsPanel__header:hover {
+	background: var(--bg-hover);
+}
+
+.gemsPanel__headerTitle {
+	flex: 1;
+	text-align: left;
+}
+
+.gemsPanel__chevron {
+	font-size: 12px;
+	color: var(--text-muted);
+	transition: transform 0.2s;
+	display: inline-block;
+	transform: rotate(-90deg);
+}
+
+.gemsPanel__chevron--open {
+	transform: rotate(0deg);
+}
+
+.gemsPanel__body {
+	padding: 0 10px 10px;
+	-webkit-app-region: no-drag;
+}
+
+.gemsPanel__banner {
+	font-size: var(--font-xs);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--accent-bronze);
+	text-align: center;
+	padding: 4px 0 6px;
+}
+
+.gemsPanel__requirements {
+	font-size: var(--font-xs);
+	color: var(--text-muted);
+	text-align: center;
+	padding: 2px 0 8px;
+	letter-spacing: 0.04em;
+}
+
+.gemsPanel__grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+@media (max-width: 320px) {
+	.gemsPanel__grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.gemsPanel__sections {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+/* ── Gem card ─────────────────────────────────────────────── */
+.gemCard {
+	background: rgba(18, 13, 8, 0.55);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	padding: 6px 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.gemCard__header {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.gemCard__slotBadge {
+	font-size: 9px;
+	font-weight: 700;
+	color: var(--text-muted);
+	min-width: 12px;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.gemCard__icon {
+	width: 28px;
+	height: 28px;
+	border-radius: var(--radius-sm);
+	display: grid;
+	place-items: center;
+	font-weight: 700;
+	font-size: 13px;
+	flex-shrink: 0;
+}
+
+/* TODO: source PoE2 gem icons; see Appendix B */
+.gemCard__icon--red   { background: #6b2a2a; color: #ffd2d2; }
+.gemCard__icon--green { background: #2a5e2a; color: #d2ffd2; }
+.gemCard__icon--blue  { background: #2a3a6b; color: #d2dcff; }
+.gemCard__icon--white { background: #555; color: #ddd; }
+
+.gemCard__info {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+}
+
+.gemCard__name {
+	font-size: var(--font-xs);
+	font-weight: 600;
+	color: var(--text-body);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.gemCard__level {
+	font-size: 9px;
+	color: var(--text-muted);
+}
+
+.gemCard__supports {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-left: 4px;
+}
+
+/* ── Support chip ─────────────────────────────────────────── */
+.supportChip {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.supportChip__dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.supportChip__dot--red   { background: #8b3a3a; }
+.supportChip__dot--green { background: #3a7a3a; }
+.supportChip__dot--blue  { background: #3a4e8b; }
+.supportChip__dot--white { background: #777; }
+
+.supportChip__name {
+	font-size: 9px;
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* ── Gems section ─────────────────────────────────────────── */
+.gemsSection {
+	padding: 7px 8px;
+	background: rgba(18, 13, 8, 0.4);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-sm);
+}
+
+.gemsSection__title {
+	font-size: var(--font-xs);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--text-gold);
+	margin-bottom: 5px;
+}
+
+.gemsSection__body {
+	font-size: var(--font-sm);
+	color: var(--text-body);
+	line-height: 1.5;
+}
+
+.gemsSection__para {
+	margin: 0 0 5px;
+}
+
+.gemsSection__para:last-child {
+	margin-bottom: 0;
+}
+
+/* Warning callout */
+.gemsSection--warning {
+	background: rgba(200, 112, 96, 0.08);
+	border-color: rgba(200, 112, 96, 0.35);
+}
+
+.gemsSection--warning .gemsSection__title {
+	color: #c87060;
+}
+
+.gemsSection--warning .gemsSection__body {
+	color: var(--text-body);
+}
+
+/* Priority list */
+.gemsSection__priorityList {
+	margin: 0;
+	padding: 0 0 0 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.gemsSection__priorityList li {
+	font-size: var(--font-sm);
+	color: var(--text-body);
+	line-height: 1.45;
+}
+
+/* ── Toast ────────────────────────────────────────────────── */
+.settingsToast {
+	position: absolute;
+	top: 8px;
+	right: 12px;
+	background: var(--bg-header);
+	border: 1px solid var(--border-gold-bright);
+	border-radius: var(--radius-sm);
+	color: var(--text-gold);
+	font-size: var(--font-xs);
+	padding: 4px 10px;
+	pointer-events: none;
+	z-index: 10;
+	font-weight: 600;
+}
