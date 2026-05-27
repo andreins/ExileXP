@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import type { ActId, ProfileId } from "./types/guide";
 import { getMergedGuide } from "./lib/profile";
@@ -234,12 +234,21 @@ function App() {
 	}, [autodetect, zoneIndex]);
 
 	// ── Height sync ───────────────────────────────────────────────────────
-	useLayoutEffect(() => {
+	// ResizeObserver re-measures whenever any descendant changes size — including
+	// state changes inside child components (e.g. expanding gem notes inside
+	// GemsPanel) that would not otherwise trigger an App re-render.
+	useEffect(() => {
 		const el = appRef.current;
 		if (!el) return;
-		const h = el.offsetHeight;
-		if (h > 0) window.overlay?.setWindowHeight(h);
-	});
+		const push = () => {
+			const h = el.offsetHeight;
+			if (h > 0) window.overlay?.setWindowHeight(h);
+		};
+		push(); // initial sync
+		const observer = new ResizeObserver(push);
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, []);
 
 	// ── Handlers ──────────────────────────────────────────────────────────
 	const toggleTask = (id: string) => {

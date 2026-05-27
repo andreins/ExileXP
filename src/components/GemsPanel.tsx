@@ -115,13 +115,13 @@ export default function GemsPanel({ act, profile, open, onToggle }: Props) {
 	// Hooks must run unconditionally — even when gems data is absent — to keep
 	// hook order stable across profile/act changes.
 	const sectionsKey = `poe2-overlay-gems-sections-open:${profile}:${act}`;
-	const [sectionsOpen, setSectionsOpen] = useState<boolean>(true);
+	const [sectionsOpen, setSectionsOpen] = useState<boolean>(false);
 	useEffect(() => {
 		try {
 			const raw = localStorage.getItem(sectionsKey);
-			setSectionsOpen(raw === null ? true : raw === "true");
+			setSectionsOpen(raw === "true"); // default collapsed
 		} catch {
-			setSectionsOpen(true);
+			setSectionsOpen(false);
 		}
 	}, [sectionsKey]);
 
