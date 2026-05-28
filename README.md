@@ -18,7 +18,7 @@ If you main something other than Monk, **fork this repo and adapt** the profile 
     <td width="50%"><img src="docs/images/overlay-gems.png" alt="Skill Gems panel"></td>
   </tr>
   <tr>
-    <td>Monk profile, Act 1 — tasks for the current zone with target level and league rewards.</td>
+    <td>Monk profile, Act 2 — tasks for the current zone with target level and league rewards.</td>
     <td>Per-act Skill Gems panel: skill + support gems with mapping / bossing notes.</td>
   </tr>
 </table>
