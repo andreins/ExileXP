@@ -258,9 +258,23 @@ function App() {
 	}, []);
 
 	// Pending unmapped internal ID. While set (≤ 60 s old), the next manual
-	// zone click teaches the app what this ID maps to.
-	const pendingUnmappedRef = useRef<{ raw: string; at: number } | null>(null);
+	// zone click teaches the app what this ID maps to. Kept in state (not a
+	// ref) so the UI can surface a "teach me" banner over the main view.
+	const [pendingUnmapped, setPendingUnmapped] = useState<{ raw: string; at: number } | null>(null);
 	const LEARN_WINDOW_MS = 60_000;
+
+	// Auto-clear the pending unmapped state once the learning window expires
+	// so the banner doesn't linger forever after a missed teach.
+	useEffect(() => {
+		if (!pendingUnmapped) return;
+		const remaining = pendingUnmapped.at + LEARN_WINDOW_MS - Date.now();
+		if (remaining <= 0) {
+			setPendingUnmapped(null);
+			return;
+		}
+		const id = setTimeout(() => setPendingUnmapped(null), remaining);
+		return () => clearTimeout(id);
+	}, [pendingUnmapped]);
 
 	const switchToZoneByName = (name: string) => {
 		const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -275,7 +289,7 @@ function App() {
 		// Resolved display names — straight to the index lookup.
 		const unsubEntered = window.overlay?.onZoneEntered((name) => {
 			setLastDetectedZone({ name, at: Date.now() });
-			pendingUnmappedRef.current = null;
+			setPendingUnmapped(null);
 			if (autodetect !== "on") return;
 			switchToZoneByName(name);
 		});
@@ -285,13 +299,13 @@ function App() {
 			const learned = learnedMapRef.current[raw];
 			if (learned) {
 				setLastDetectedZone({ name: learned, at: Date.now() });
-				pendingUnmappedRef.current = null;
+				setPendingUnmapped(null);
 				if (autodetect !== "on") return;
 				switchToZoneByName(learned);
 				return;
 			}
 			setLastDetectedZone({ name: raw, at: Date.now(), unmapped: true });
-			pendingUnmappedRef.current = { raw, at: Date.now() };
+			setPendingUnmapped({ raw, at: Date.now() });
 		});
 		return () => {
 			unsubEntered?.();
@@ -329,19 +343,18 @@ function App() {
 
 		// Learning: if the tail recently emitted an unmapped internal ID,
 		// associate it with the zone the user just clicked.
-		const pending = pendingUnmappedRef.current;
-		if (pending && Date.now() - pending.at <= LEARN_WINDOW_MS) {
+		if (pendingUnmapped && Date.now() - pendingUnmapped.at <= LEARN_WINDOW_MS) {
 			const zone = activeAct.zones[next];
 			if (zone) {
-				learnedMapRef.current[pending.raw] = zone.name;
+				learnedMapRef.current[pendingUnmapped.raw] = zone.name;
 				try {
 					localStorage.setItem(LEARNED_KEY, JSON.stringify(learnedMapRef.current));
 				} catch {
 					/* ignore */
 				}
-				console.log(`[learn] ${pending.raw} → ${zone.name}`);
+				console.log(`[learn] ${pendingUnmapped.raw} → ${zone.name}`);
 			}
-			pendingUnmappedRef.current = null;
+			setPendingUnmapped(null);
 		}
 	};
 
@@ -443,6 +456,25 @@ function App() {
 				onOpenSettings={() => setSettingsOpen((o) => !o)}
 				onCloseApp={() => window.overlay?.closeApp()}
 			/>
+			{pendingUnmapped && (
+				<div className="learnBanner" data-always-interactive="true">
+					<div className="learnBanner__body">
+						<div className="learnBanner__title">
+							New area ID: <strong>{pendingUnmapped.raw}</strong>
+						</div>
+						<div className="learnBanner__hint">
+							Click the matching zone in the strip below to teach the overlay. {settingsOpen && <em>(Close Settings first.)</em>}
+						</div>
+					</div>
+					<button
+						className="learnBanner__close"
+						onClick={(e) => { e.currentTarget.blur(); setPendingUnmapped(null); }}
+						title="Dismiss"
+					>
+						✕
+					</button>
+				</div>
+			)}
 			{settingsOpen ? (
 				<SettingsPanel
 					profile={profile}

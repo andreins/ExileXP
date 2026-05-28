@@ -621,6 +621,63 @@ textarea:focus-visible {
 	background: rgba(201, 160, 98, 0.08);
 }
 
+/* ── Learn banner (unmapped zone-id prompt) ──────────────── */
+.learnBanner {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 8px 10px;
+	background: rgba(216, 155, 75, 0.16);
+	border: 1px solid var(--accent-bronze);
+	border-radius: var(--radius-sm);
+	margin: 6px 10px 0;
+	font-size: var(--font-xs);
+	color: var(--text-body);
+}
+
+.learnBanner__body {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.learnBanner__title {
+	color: var(--text-gold-bright);
+	font-weight: 600;
+}
+
+.learnBanner__title strong {
+	color: var(--text-gold-bright);
+	font-family: monospace;
+	background: rgba(0, 0, 0, 0.25);
+	padding: 0 4px;
+	border-radius: 2px;
+}
+
+.learnBanner__hint {
+	color: var(--text-muted);
+}
+
+.learnBanner__hint em {
+	color: var(--text-gold);
+	font-style: normal;
+}
+
+.learnBanner__close {
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	font-size: var(--font-sm);
+	cursor: pointer;
+	padding: 0 4px;
+	transition: color 0.15s;
+}
+
+.learnBanner__close:hover {
+	color: var(--text-gold);
+}
+
 /* ── Close-app button ─────────────────────────────────────── */
 .closeAppBtn {
 	background: transparent;
