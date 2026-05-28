@@ -719,6 +719,13 @@ textarea:focus-visible {
 	border-color: rgba(200, 90, 70, 0.45);
 }
 
+.closeAppBtn--confirming {
+	color: #ffd5b8;
+	background: rgba(220, 120, 70, 0.32);
+	border-color: rgba(220, 120, 70, 0.7);
+	font-weight: 700;
+}
+
 /* ── Learned zone mappings list ───────────────────────────── */
 .learnedList {
 	display: flex;

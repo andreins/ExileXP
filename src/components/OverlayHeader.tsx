@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import type { ProfileId } from "../types/guide";
 import SettingsButton from "./SettingsButton";
 
@@ -20,6 +21,32 @@ const GUIDE_URLS: Record<ProfileId, { url: string; label: string }> = {
 
 export default function OverlayHeader({ profile, clickThrough, onToggleClickThrough, settingsOpen, onOpenSettings, onCloseApp }: Props) {
 	const guide = GUIDE_URLS[profile];
+
+	// Two-click confirmation on the close button. First click → label
+	// becomes "?" and stays for 3 s. Second click within that window
+	// actually quits. Mirrors the Catch-up button pattern in ZoneNav.
+	const [closeConfirming, setCloseConfirming] = useState(false);
+	const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	function clearCloseTimer() {
+		if (closeTimerRef.current) {
+			clearTimeout(closeTimerRef.current);
+			closeTimerRef.current = null;
+		}
+	}
+
+	function handleClose(e: React.MouseEvent<HTMLButtonElement>) {
+		e.currentTarget.blur();
+		if (!closeConfirming) {
+			setCloseConfirming(true);
+			clearCloseTimer();
+			closeTimerRef.current = setTimeout(() => setCloseConfirming(false), 3000);
+			return;
+		}
+		clearCloseTimer();
+		setCloseConfirming(false);
+		onCloseApp();
+	}
 
 	function handleGuideClick(e: React.MouseEvent<HTMLAnchorElement>) {
 		// Only Shift-click opens the guide — keeps stray clicks from accidentally
@@ -55,12 +82,12 @@ export default function OverlayHeader({ profile, clickThrough, onToggleClickThro
 					{clickThrough ? "⊘" : "◎"}
 				</button>
 				<button
-					className="closeAppBtn"
-					onClick={(e) => { e.currentTarget.blur(); onCloseApp(); }}
-					title="Close ExileXP"
+					className={`closeAppBtn${closeConfirming ? " closeAppBtn--confirming" : ""}`}
+					onClick={handleClose}
+					title={closeConfirming ? "Click again to confirm close" : "Close ExileXP"}
 					data-always-interactive="true"
 				>
-					✕
+					{closeConfirming ? "?" : "✕"}
 				</button>
 			</div>
 		</div>

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, globalShortcut, ipcMain, screen, shell } from "electron";
+import { app, BrowserWindow, dialog, globalShortcut, ipcMain, Menu, nativeImage, screen, shell, Tray } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let win: BrowserWindow | null = null;
+let tray: Tray | null = null;
 let clickThrough = false;
 let desiredHeight = 390;
 let desiredWidth = 460;
@@ -57,12 +58,64 @@ function getEffectiveClientLogPath(): string | null {
 
 const isDev = !app.isPackaged;
 
+// ── Window position persistence ───────────────────────────────────────────
+// We can't use localStorage from main, so we stash a small JSON file in the
+// user's app-data folder. Tracks just (x, y) — width/height stay fixed.
+
+type WindowState = { x: number; y: number };
+
+function windowStatePath() {
+	return path.join(app.getPath("userData"), "window-state.json");
+}
+
+function loadWindowState(): WindowState | null {
+	try {
+		const raw = fs.readFileSync(windowStatePath(), "utf8");
+		const obj = JSON.parse(raw) as WindowState;
+		if (typeof obj.x === "number" && typeof obj.y === "number") return obj;
+	} catch {
+		/* ignore — missing file or bad json */
+	}
+	return null;
+}
+
+function saveWindowState(state: WindowState) {
+	try {
+		fs.writeFileSync(windowStatePath(), JSON.stringify(state), "utf8");
+	} catch {
+		/* ignore */
+	}
+}
+
+function defaultTopRightPosition(width: number): { x: number; y: number } {
+	const { workArea } = screen.getPrimaryDisplay();
+	return {
+		x: workArea.x + workArea.width - width - 8,
+		y: workArea.y + 8,
+	};
+}
+
+function clampToWorkArea(state: WindowState, width: number, height: number): WindowState {
+	const { workArea } = screen.getDisplayMatching({ x: state.x, y: state.y, width, height });
+	return {
+		x: Math.max(workArea.x, Math.min(state.x, workArea.x + workArea.width - width)),
+		y: Math.max(workArea.y, Math.min(state.y, workArea.y + workArea.height - height)),
+	};
+}
+
 function createWindow() {
+	const initialWidth = 460;
+	const initialHeight = 390;
+	const saved = loadWindowState();
+	const initialPos = saved
+		? clampToWorkArea(saved, initialWidth, initialHeight)
+		: defaultTopRightPosition(initialWidth);
+
 	win = new BrowserWindow({
-		width: 460,
-		height: 390,
-		x: 40,
-		y: 80,
+		width: initialWidth,
+		height: initialHeight,
+		x: initialPos.x,
+		y: initialPos.y,
 		frame: false,
 		transparent: true,
 		resizable: true,
@@ -74,6 +127,18 @@ function createWindow() {
 			contextIsolation: true,
 			nodeIntegration: false
 		}
+	});
+
+	// Debounced position save on user-driven window moves.
+	let moveTimer: ReturnType<typeof setTimeout> | null = null;
+	win.on("move", () => {
+		if (!win) return;
+		if (moveTimer) clearTimeout(moveTimer);
+		moveTimer = setTimeout(() => {
+			if (!win) return;
+			const [x, y] = win.getPosition();
+			saveWindowState({ x, y });
+		}, 300);
 	});
 
 	win.setAlwaysOnTop(true, "screen-saver");
@@ -101,12 +166,78 @@ function createWindow() {
 	}
 }
 
+// Toggle window visibility from outside the renderer (tray-icon click,
+// global shortcut, etc.). Mirrors the Ctrl+Shift+H behaviour: hiding pins
+// `userHidden = true`; showing clears the pin so focus-watcher resumes.
+function toggleWindowVisible() {
+	if (!win) return;
+	if (win.isVisible()) {
+		userHidden = true;
+		win.hide();
+	} else {
+		userHidden = false;
+		win.show();
+	}
+	updateTrayMenu();
+}
+
+// Resolve the tray icon path — checked relative to dist-electron in dev,
+// then relative to resources in a packaged app.
+function resolveTrayIconPath(): string | null {
+	const candidates = [
+		path.join(__dirname, "../build/icon.ico"),
+		path.join(process.resourcesPath ?? "", "icon.ico"),
+		path.join(__dirname, "icon.ico"),
+	];
+	for (const p of candidates) {
+		if (fs.existsSync(p)) return p;
+	}
+	return null;
+}
+
+function buildTrayMenu(): Menu {
+	const isVisible = win?.isVisible() ?? false;
+	return Menu.buildFromTemplate([
+		{ label: isVisible ? "Hide overlay" : "Show overlay", click: toggleWindowVisible },
+		{ type: "separator" },
+		{
+			label: "Quit ExileXP",
+			click: () => {
+				app.quit();
+			},
+		},
+	]);
+}
+
+function updateTrayMenu() {
+	if (tray) tray.setContextMenu(buildTrayMenu());
+}
+
+function createTray() {
+	const iconPath = resolveTrayIconPath();
+	if (!iconPath) {
+		console.warn("[tray] icon not found — skipping tray creation");
+		return;
+	}
+	const image = nativeImage.createFromPath(iconPath);
+	tray = new Tray(image);
+	tray.setToolTip("ExileXP");
+	tray.setContextMenu(buildTrayMenu());
+	tray.on("click", toggleWindowVisible);
+	// Keep the menu's "Show / Hide" label in sync as visibility changes.
+	if (win) {
+		win.on("show", updateTrayMenu);
+		win.on("hide", updateTrayMenu);
+	}
+}
+
 app.whenReady().then(() => {
 	if (process.platform === "win32") {
 		app.setAppUserModelId("com.exilexp.overlay");
 	}
 
 	createWindow();
+	createTray();
 
 	// Foreground-process watcher (Windows only) — toggled by the renderer.
 	// We pass an `isHidden` predicate so the watcher refuses to re-show the
@@ -247,10 +378,12 @@ app.on("window-all-closed", () => {
 
 app.on("will-quit", () => {
 	globalShortcut.unregisterAll();
-});
-
-app.on("before-quit", () => {
-	// Make sure the focus-watcher child process is killed even if the user
-	// closes the window via taskbar / Alt-F4 rather than the close button.
-	// (focusWatcher.dispose() is also called from the close-app IPC.)
+	if (tray) {
+		try {
+			tray.destroy();
+		} catch {
+			/* ignore */
+		}
+		tray = null;
+	}
 });

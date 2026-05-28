@@ -44,6 +44,8 @@ If you main something other than Monk, **fork this repo and adapt** the profile 
 1. Download the latest `ExileXP-<version>-portable.exe` from the [Releases](https://github.com/andreins/ExileXP/releases) page.
 2. Double-click to run. **No install — no uninstaller — no registry footprint.** Settings live in `%APPDATA%/ExileXP/`.
 
+> **Every release is built from CI.** The GitHub Actions run linked from each release page proves the .exe was built from the tagged commit, not someone's laptop. The release notes include the SHA-256 — you can verify locally with `Get-FileHash`.
+
 > **First-run SmartScreen warning:** the .exe is not code-signed (paid certs cost $90+/yr — skipped to keep the project free). Windows will show "Windows protected your PC" on first launch. Click **More info → Run anyway**.
 
 ## Keyboard shortcuts

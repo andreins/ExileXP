@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write   # required by softprops/action-gh-release to upload assets
+
+jobs:
+  build:
+    name: Build portable .exe and publish release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build portable .exe
+        run: npm run dist
+
+      - name: Locate artifact
+        id: artifact
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path release -Filter "ExileXP-*-portable.exe" | Select-Object -First 1
+          if (-not $exe) { Write-Error "No portable .exe produced"; exit 1 }
+          $hash = (Get-FileHash $exe.FullName -Algorithm SHA256).Hash
+          Write-Host "Artifact: $($exe.FullName)"
+          Write-Host "SHA-256:  $hash"
+          "path=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "name=$($exe.Name)"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "sha256=$hash"          | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Determine release flags
+        id: release_meta
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ "$TAG" == *-* ]]; then
+            echo "prerelease=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_meta.outputs.tag }}
+          name: ExileXP ${{ steps.release_meta.outputs.tag }}
+          draft: false
+          prerelease: ${{ steps.release_meta.outputs.prerelease }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          files: ${{ steps.artifact.outputs.path }}
+          body: |
+            Built from this tag's commit via the linked Actions run — proves the .exe came from CI, not someone's laptop.
+
+            ## Download
+
+            Grab `${{ steps.artifact.outputs.name }}` from the assets below. No install needed — just double-click.
+
+            **SHA-256**: `${{ steps.artifact.outputs.sha256 }}`
+
+            Verify with PowerShell:
+            ```
+            Get-FileHash .\${{ steps.artifact.outputs.name }} -Algorithm SHA256
+            ```
+
+            First-run will trigger Windows SmartScreen — see the README install section for the bypass (the binary is unsigned to keep the project free).

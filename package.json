@@ -67,6 +67,9 @@
       "buildResources": "build",
       "output": "release"
     },
+    "extraResources": [
+      { "from": "build/icon.ico", "to": "icon.ico" }
+    ],
     "win": {
       "target": [
         {
