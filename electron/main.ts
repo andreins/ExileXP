@@ -292,20 +292,11 @@ app.whenReady().then(() => {
 		win.webContents.send("overlay:click-through", clickThrough);
 	});
 
-	globalShortcut.register("CommandOrControl+Shift+H", () => {
-		if (!win) return;
-		// Important: flip `userHidden` BEFORE calling show()/hide(). If we
-		// did it after, the focus-watcher's polling tick could fire in
-		// between, observe the old userHidden value, and re-show/re-hide,
-		// producing a visible blink on toggle.
-		if (win.isVisible()) {
-			userHidden = true;
-			win.hide();
-		} else {
-			userHidden = false;
-			win.show();
-		}
-	});
+	globalShortcut.register("CommandOrControl+Shift+H", toggleWindowVisible);
+
+	// Also expose the same toggle to the renderer so the clickable
+	// "Ctrl+Shift+H(ide)" hint in the header can drive it.
+	ipcMain.on("overlay:toggle-hide", toggleWindowVisible);
 
 	ipcMain.on("overlay:set-height", (_event, height: number) => {
 		if (!win) return;

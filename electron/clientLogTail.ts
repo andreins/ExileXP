@@ -171,10 +171,13 @@ export function createClientLogTail(
 			}
 		}
 
-		// Catch-up: scan the last ~64 KB of the log for the most recent zone
-		// entry so the overlay snaps to the player's current zone even if
-		// PoE2 was already running when we launched. Prefer a display-name
-		// match (ZONE_RE) over an internal-ID match (GEN_RE) when both exist.
+		// Catch-up: scan the last ~64 KB of the log for the most recent state
+		// signal. Critically, if the *most recent* SCENE is "(null)" or
+		// "(unknown)" — meaning the player logged out / is at character
+		// select — we emit scene-cleared and let the overlay stay hidden.
+		// Previously we skipped blank scenes and walked further back to a
+		// real zone, which made the overlay show during char-select on
+		// every launch.
 		const scanSize = Math.min(stat.size, 64 * 1024);
 		if (scanSize > 0) {
 			try {
@@ -184,28 +187,33 @@ export function createClientLogTail(
 				fs.readSync(fd, buf, 0, scanSize, startOffset);
 				fs.closeSync(fd);
 				const lines = buf.toString("utf8").split(/\r?\n/);
+				let acted = false;
 				let recentInternal: string | null = null;
-				let foundDisplay = false;
-				// Prefer SCENE / "You have entered" lines (display names) over
-				// internal IDs. Walk in reverse and emit the first display-name
-				// match; fall back to the most recent internal ID otherwise.
+				// Walk in reverse. First definitive signal wins — including
+				// a blank SCENE, which now means "stay hidden".
 				for (let i = lines.length - 1; i >= 0; i--) {
 					const sm = lines[i].match(SCENE_RE);
 					if (sm) {
 						const scene = sm[1].trim();
-						if (!SCENE_BLANK.has(scene)) {
+						if (SCENE_BLANK.has(scene)) {
+							console.log("[clientLogTail] catch-up: most-recent SCENE is blank →", scene);
+							win.webContents.send("overlay:scene-cleared", scene);
+							hooks.onSceneCleared?.();
+						} else {
 							console.log("[clientLogTail] catch-up: emitting most-recent scene =", scene);
 							win.webContents.send("overlay:zone-entered", scene);
-							foundDisplay = true;
-							break;
+							hooks.onZoneEntered?.();
 						}
+						acted = true;
+						break;
 					}
 					const zm = lines[i].match(ZONE_RE);
 					if (zm) {
 						const zone = zm[1].trim();
 						console.log("[clientLogTail] catch-up: emitting most-recent zone =", zone);
 						win.webContents.send("overlay:zone-entered", zone);
-						foundDisplay = true;
+						hooks.onZoneEntered?.();
+						acted = true;
 						break;
 					}
 					if (!recentInternal) {
@@ -213,11 +221,12 @@ export function createClientLogTail(
 						if (gm) recentInternal = gm[1].trim();
 					}
 				}
-				if (!foundDisplay && recentInternal) {
+				if (!acted && recentInternal) {
 					const mapped = INTERNAL_TO_DISPLAY[recentInternal];
 					if (mapped) {
 						console.log("[clientLogTail] catch-up: emitting internal-id zone =", recentInternal, "→", mapped);
 						win.webContents.send("overlay:zone-entered", mapped);
+						hooks.onZoneEntered?.();
 					} else {
 						console.log("[clientLogTail] catch-up: unmapped internal =", recentInternal);
 						win.webContents.send("overlay:zone-internal", recentInternal);

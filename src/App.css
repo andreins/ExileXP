@@ -114,6 +114,22 @@ textarea:focus-visible {
 	letter-spacing: 0.02em;
 }
 
+.overlayHintBtn {
+	background: none;
+	border: none;
+	padding: 1px 4px;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	font-family: inherit;
+	-webkit-app-region: no-drag;
+	transition: color 0.15s, background 0.15s;
+}
+
+.overlayHintBtn:hover {
+	color: var(--text-gold);
+	background: rgba(201, 160, 98, 0.08);
+}
+
 .overlayVersion {
 	font-size: 9px;
 	font-weight: 400;

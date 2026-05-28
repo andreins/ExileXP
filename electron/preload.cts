@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("overlay", {
 	setMouseInteractive: (interactive: boolean) => ipcRenderer.send("overlay:set-mouse-interactive", interactive),
 	setFocusTracking: (enabled: boolean) => ipcRenderer.send("overlay:set-focus-tracking", enabled),
 	closeApp: () => ipcRenderer.send("overlay:close-app"),
+	toggleHide: () => ipcRenderer.send("overlay:toggle-hide"),
 	setClientLogPath: (p: string | null) => ipcRenderer.invoke("overlay:set-client-log-path", p),
 	getDefaultClientLogPath: () => ipcRenderer.invoke("overlay:get-default-client-log-path"),
 	pickClientLogPath: () => ipcRenderer.invoke("overlay:pick-client-log-path"),

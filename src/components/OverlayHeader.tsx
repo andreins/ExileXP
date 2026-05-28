@@ -62,7 +62,14 @@ export default function OverlayHeader({ profile, clickThrough, onToggleClickThro
 				<span className="overlayTitle">
 					ExileXP <span className="overlayVersion">v{__APP_VERSION__}</span>
 				</span>
-				<span className="overlayHint">Ctrl+Shift+H(ide)</span>
+				<button
+					className="overlayHint overlayHintBtn"
+					onClick={(e) => { e.currentTarget.blur(); window.overlay?.toggleHide(); }}
+					title="Click to hide / show overlay (same as Ctrl+Shift+H)"
+					data-always-interactive="true"
+				>
+					Ctrl+Shift+H(ide)
+				</button>
 			</div>
 			<div className="overlayHeaderRight">
 				<a

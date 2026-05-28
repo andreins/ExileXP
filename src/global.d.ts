@@ -12,6 +12,7 @@ declare global {
 			setMouseInteractive: (interactive: boolean) => void;
 			setFocusTracking: (enabled: boolean) => void;
 			closeApp: () => void;
+			toggleHide: () => void;
 			setClientLogPath: (p: string | null) => Promise<string | null>;
 			getDefaultClientLogPath: () => Promise<string | null>;
 			pickClientLogPath: () => Promise<string | null>;

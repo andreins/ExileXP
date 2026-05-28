@@ -11,7 +11,10 @@ type Props = {
 
 export default function TaskRow({ task, done, onToggle, autocompleteOnLeave }: Props) {
 	let rowClass = "taskRow";
-	if (done) rowClass += " taskRow--done";
+	// In bullet/autocomplete mode, never strike through the text — the user
+	// often backtracks and a crossed-out zone is harder to re-read. The
+	// bullet itself toggles to indicate done state.
+	if (done && autocompleteOnLeave !== "on") rowClass += " taskRow--done";
 	if (task.optional) rowClass += " taskRow--optional";
 
 	return (

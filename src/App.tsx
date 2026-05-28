@@ -297,6 +297,18 @@ function App() {
 		autocompleteOnLeaveRef.current = autocompleteOnLeave;
 	}, [autocompleteOnLeave]);
 
+	// Long-lived autodetect subscription reads `guide` and `completed` via
+	// these refs so we don't need to re-subscribe (and risk dropping a
+	// Client.txt event) every time progress changes.
+	const guideRef = useRef(guide);
+	const completedRef = useRef(completed);
+	useEffect(() => {
+		guideRef.current = guide;
+	}, [guide]);
+	useEffect(() => {
+		completedRef.current = completed;
+	}, [completed]);
+
 	// Bulk-mark every task in the given zone as complete. Called only from
 	// autodetect transitions; manual nav (Next/Prev/strip clicks) never
 	// triggers this.
@@ -386,12 +398,41 @@ function App() {
 	// autocomplete the zone we were on (if the user has the setting enabled
 	// and the new zone is actually different from the current one). Manual
 	// nav (Next/Prev/strip/tab) doesn't go through this path.
+	//
+	// Some zone names appear in the campaign twice (Ziggurat Encampment and
+	// Infested Barrens in Act 3 — initial + return visit). The lookup
+	// returns all candidates and we pick the right one: prefer a same-act
+	// candidate that's at or ahead of the player's current position, and
+	// among those, prefer the FIRST one whose tasks aren't already all
+	// done. That way the second-visit zone gets picked up automatically
+	// once the first-visit zone is complete.
 	const switchToZoneByName = (name: string) => {
 		const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-		const hit = zoneIndex.get(normalize(name));
-		if (!hit) return false; // hideout, side area, etc. — silently ignore
+		const candidates = zoneIndex.get(normalize(name));
+		if (!candidates || candidates.length === 0) return false;
 
 		const current = currentZoneRef.current;
+		let hit = candidates[0];
+		if (candidates.length > 1) {
+			const currentGuide = guideRef.current;
+			const currentCompleted = completedRef.current;
+			const zoneIsDone = (actId: ActId, idx: number) => {
+				const act = currentGuide.find((a) => a.id === actId);
+				const z = act?.zones[idx];
+				if (!z || z.tasks.length === 0) return false;
+				return z.tasks.every((t) => currentCompleted[t.id]);
+			};
+
+			const sameAct = candidates.filter((c) => c.actId === current.actId);
+			const pool = sameAct.length > 0 ? sameAct : candidates;
+			// Prefer same-act candidates at or after the current zone index.
+			const ahead = pool.filter((c) => c.zoneIndex >= current.zoneIndex);
+			const search = ahead.length > 0 ? ahead : pool;
+			// Among those, take the first one not yet fully complete; if
+			// all are done, fall back to the closest one ahead.
+			hit = search.find((c) => !zoneIsDone(c.actId, c.zoneIndex)) ?? search[0];
+		}
+
 		const isActualChange = current.actId !== hit.actId || current.zoneIndex !== hit.zoneIndex;
 		if (isActualChange && autocompleteOnLeaveRef.current === "on") {
 			autocompleteZone(current.actId, current.zoneIndex);

@@ -45,6 +45,12 @@ export function createFocusWatcher(
 	let child: ChildProcess | null = null;
 	let enabled = false;
 	let lineBuffer = "";
+	// Damping: hide only after the foreground has been "not PoE / not us"
+	// for 2 consecutive ticks (~1.5 s). Show is immediate so legitimate
+	// alt-tabs back to PoE feel responsive. Without this, brief transitional
+	// foreground states (the Alt-Tab UI, ExileXP itself flashing through, a
+	// tooltip popup) cause a visible blink.
+	let consecutiveHideTicks = 0;
 
 	function handleProcessName(raw: string) {
 		const win = getWindow();
@@ -53,6 +59,7 @@ export function createFocusWatcher(
 		// presses the shortcut again to clear the pin.
 		if (isUserHidden()) {
 			if (win.isVisible()) win.hide();
+			consecutiveHideTicks = 0;
 			return;
 		}
 		const name = raw.trim().toLowerCase();
@@ -63,9 +70,11 @@ export function createFocusWatcher(
 		const shouldShow = isPoE || isSelf;
 
 		if (shouldShow) {
+			consecutiveHideTicks = 0;
 			if (!win.isVisible()) win.showInactive(); // showInactive keeps PoE focused
 		} else {
-			if (win.isVisible()) win.hide();
+			consecutiveHideTicks++;
+			if (consecutiveHideTicks >= 2 && win.isVisible()) win.hide();
 		}
 	}
 
