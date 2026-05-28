@@ -16,6 +16,10 @@ let desiredWidth = 460;
 // and the focus-watcher must not re-show it on the next foreground change.
 // Cleared when the user presses Ctrl+Shift+H again to bring the window back.
 let userHidden = false;
+// Set by clientLogTail when PoE2's [SCENE] is "(null)" or "(unknown)" —
+// the player is at character select / between scenes. Cleared when a real
+// scene name fires next.
+let sceneHidden = false;
 
 // ── Client.txt auto-detection ───────────────────────────────────────────────
 // Cross common drives × common install patterns. Order matters: first match wins.
@@ -104,14 +108,27 @@ app.whenReady().then(() => {
 
 	createWindow();
 
-	// Client.txt tail — instantiate after window is created
-	const logTail = createClientLogTail(getEffectiveClientLogPath, win!);
-	logTail.start();
-
 	// Foreground-process watcher (Windows only) — toggled by the renderer.
-	// We pass an `isUserHidden` predicate so the watcher refuses to re-show
-	// the window after the user manually pressed Ctrl+Shift+H.
-	const focusWatcher = createFocusWatcher(() => win, () => userHidden);
+	// We pass an `isHidden` predicate so the watcher refuses to re-show the
+	// window when the user manually hid it OR when the player is at PoE2's
+	// character select / between-scene transition.
+	const focusWatcher = createFocusWatcher(() => win, () => userHidden || sceneHidden);
+
+	// Client.txt tail — instantiate after window is created. Hook scene
+	// transitions so character select / loading screens hide the overlay
+	// immediately (without waiting for the next 750 ms focus-watcher tick).
+	const logTail = createClientLogTail(getEffectiveClientLogPath, win!, {
+		onSceneCleared: () => {
+			sceneHidden = true;
+			if (win?.isVisible()) win.hide();
+		},
+		onZoneEntered: () => {
+			sceneHidden = false;
+			// Don't force-show here — focusWatcher's next tick will pick this
+			// up and only show if PoE2 / ExileXP is the foreground window.
+		},
+	});
+	logTail.start();
 
 	globalShortcut.register("CommandOrControl+Shift+X", () => {
 		if (!win) return;
@@ -123,13 +140,16 @@ app.whenReady().then(() => {
 
 	globalShortcut.register("CommandOrControl+Shift+H", () => {
 		if (!win) return;
-
+		// Important: flip `userHidden` BEFORE calling show()/hide(). If we
+		// did it after, the focus-watcher's polling tick could fire in
+		// between, observe the old userHidden value, and re-show/re-hide,
+		// producing a visible blink on toggle.
 		if (win.isVisible()) {
+			userHidden = true;
 			win.hide();
-			userHidden = true; // pin hidden — focus-watcher won't override
 		} else {
+			userHidden = false;
 			win.show();
-			userHidden = false; // unpin — focus-watcher resumes control
 		}
 	});
 

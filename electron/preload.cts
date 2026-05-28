@@ -32,4 +32,11 @@ contextBridge.exposeInMainWorld("overlay", {
 			ipcRenderer.removeListener("overlay:zone-internal", handler);
 		};
 	},
+	onSceneCleared: (cb: (kind: string) => void) => {
+		const handler = (_event: unknown, kind: string) => cb(kind);
+		ipcRenderer.on("overlay:scene-cleared", handler);
+		return () => {
+			ipcRenderer.removeListener("overlay:scene-cleared", handler);
+		};
+	},
 });

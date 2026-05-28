@@ -95,14 +95,13 @@ npm run build      # Type-check + Vite production build + Electron main TS
 npm run dist       # Produce release/ExileXP-<version>-portable.exe
 ```
 
-## Roadmap
+## Potential directions
 
-- More class profiles (Witch, Ranger, Warrior, etc.) — contributions welcome.
-- Real PoE2 gem icons (currently colored letter placeholders).
-- Per-character progress (auto-detected from Client.txt).
-- Level detection / display.
-- Per-zone EXP tracking and pace overlay.
-- macOS / Linux builds if there's demand.
+Not promises — directions the project *could* go if it gains traction. Mostly contributor bait:
+
+- **In-app spell planner** — pick your skills + supports per act and have them render in the Gems panel instead of relying on a static curated list. Per-character, persisted alongside progress.
+- **Auto-import from Mobalytics / community guides** — pull gem recommendations and zone notes automatically. Caveat: guide formats vary wildly across creators, so this would realistically be a best-effort import that you then hand-edit.
+- **Built-in guide editor** — UI to author / tweak the leveling guide for a class with export so you can share it as a JSON file or PR it back upstream.
 
 ## Credits
 

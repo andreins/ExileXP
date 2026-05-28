@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ActId, ActGems, GemSection, ProfileId } from "../types/guide";
 import { profileMap } from "../data/profiles";
 import { renderMarkup } from "../lib/markup";
@@ -112,13 +112,11 @@ type Props = {
 };
 
 export default function GemsPanel({ act, profile, open, onToggle }: Props) {
-	// Hooks must run unconditionally — even when gems data is absent — to keep
-	// hook order stable across profile/act changes.
+	// Sections start collapsed every time this panel mounts. Profile/act
+	// changes force a remount via the `key` prop set by App.tsx, which is
+	// React's idiomatic way to reset internal state on prop change (avoids
+	// the setState-inside-useEffect anti-pattern).
 	const [sectionsOpen, setSectionsOpen] = useState<boolean>(false);
-	useEffect(() => {
-		setSectionsOpen(false);
-	}, [profile, act]);
-
 	const toggleSections = () => setSectionsOpen((prev) => !prev);
 
 	const gems = profileMap[profile]?.gems?.[act];

@@ -11,11 +11,10 @@ import ZoneCard from "./components/ZoneCard";
 import ZoneNav from "./components/ZoneNav";
 import GemsPanel from "./components/GemsPanel";
 
-const STORAGE_VERSION = "4";
 const DEFAULT_CHARACTER_NAME = "Default";
 
 // ── Storage helpers ────────────────────────────────────────────────────────
-// v4: progress and zone-by-act keys are now namespaced by (profile, character)
+// Progress and zone-by-act keys are namespaced by (class profile, character)
 // so two characters of the same class don't share a slot. Class profile drives
 // content; character drives progress.
 
@@ -56,72 +55,23 @@ function loadCharacters(): Record<string, CharacterRecord> {
 	}
 }
 
-// Migration: v2 used flat keys, v3 used :<profile> keys, v4 uses
-// :<profile>:<character>. Roll forward in steps.
-function runMigration() {
-	try {
-		const version = localStorage.getItem("poe2-overlay-version");
-		if (version === STORAGE_VERSION) return;
-
-		// v2 → v3: flat keys → :<profile> (only :standard since old data was
-		// generic). Keep the v3 step in case anyone is still on v2 → we then
-		// chain into v3 → v4 below.
-		const legacyProgress = localStorage.getItem("poe2-overlay-progress");
-		const standardKey3 = `poe2-overlay-progress:standard`;
-		if (legacyProgress && !localStorage.getItem(standardKey3)) {
-			localStorage.setItem(standardKey3, legacyProgress);
+// Find the first zone across the merged guide where not every task is
+// completed. Returns null when everything is done. Used as the default
+// position for fresh-install / brand-new-character / reset cases.
+function findFirstUncompleted(
+	guide: ReturnType<typeof getMergedGuide>,
+	progress: Record<string, boolean>,
+): { actId: ActId; zoneIndex: number } | null {
+	for (const act of guide) {
+		for (let i = 0; i < act.zones.length; i++) {
+			const z = act.zones[i];
+			if (z.tasks.length === 0) continue;
+			const done = z.tasks.every((t) => progress[t.id]);
+			if (!done) return { actId: act.id, zoneIndex: i };
 		}
-		const legacyZone = localStorage.getItem("poe2-overlay-active-zone-by-act");
-		const standardZoneKey3 = `poe2-overlay-active-zone-by-act:standard`;
-		if (legacyZone && !localStorage.getItem(standardZoneKey3)) {
-			localStorage.setItem(standardZoneKey3, legacyZone);
-		}
-
-		// v3 → v4: hoist any :<profile> keys onto a Default character slot.
-		// If both :standard and :monk exist, each becomes its own character
-		// named "Default Standard" / "Default Monk" so the user can rename
-		// them in Settings.
-		let chars = loadCharacters();
-		const profiles: ProfileId[] = ["standard", "monk"];
-		for (const p of profiles) {
-			const oldProgressKey = `poe2-overlay-progress:${p}`;
-			const oldZoneKey = `poe2-overlay-active-zone-by-act:${p}`;
-			const oldProgress = localStorage.getItem(oldProgressKey);
-			const oldZone = localStorage.getItem(oldZoneKey);
-			if (oldProgress || oldZone) {
-				// Pick a character name unique to this profile.
-				const charName = Object.keys(chars).length === 0
-					? DEFAULT_CHARACTER_NAME
-					: `Default ${p[0].toUpperCase()}${p.slice(1)}`;
-				if (!chars[charName]) {
-					chars[charName] = { class: p, createdAt: Date.now() };
-				}
-				if (oldProgress) {
-					localStorage.setItem(getProgressKey(p, charName), oldProgress);
-				}
-				if (oldZone) {
-					localStorage.setItem(getZoneByActKey(p, charName), oldZone);
-				}
-			}
-		}
-		if (Object.keys(chars).length > 0) {
-			localStorage.setItem("poe2-overlay-characters", JSON.stringify(chars));
-			if (!localStorage.getItem("poe2-overlay-active-character")) {
-				// Prefer the one matching the saved active profile.
-				const savedProfile = (localStorage.getItem("poe2-overlay-profile") as ProfileId | null) ?? "standard";
-				const match = Object.entries(chars).find(([, rec]) => rec.class === savedProfile)?.[0];
-				localStorage.setItem("poe2-overlay-active-character", match ?? Object.keys(chars)[0]);
-			}
-		}
-
-		localStorage.setItem("poe2-overlay-version", STORAGE_VERSION);
-	} catch {
-		// ignore — migration is best-effort
 	}
+	return null;
 }
-
-// Run migration before any state initialization
-runMigration();
 
 // ── App ────────────────────────────────────────────────────────────────────
 
@@ -189,10 +139,10 @@ function App() {
 	const [settingsOpen, setSettingsOpen] = useState(false);
 
 	// ── Gems panel (always starts closed on profile/act swap, no persistence) ──
+	// Reset is driven by the act/profile-change handlers below, not by a
+	// useEffect — synchronous setState inside an effect on dep change is the
+	// "Avoid resetting state in an Effect" anti-pattern per React docs.
 	const [gemsOpen, setGemsOpen] = useState<boolean>(false);
-	useEffect(() => {
-		setGemsOpen(false);
-	}, [profile, activeActId]);
 	const toggleGems = () => setGemsOpen((prev) => !prev);
 
 	// ── Click-through ─────────────────────────────────────────────────────
@@ -285,33 +235,23 @@ function App() {
 		});
 	}, []);
 
-	// ── First-uncompleted-zone default ────────────────────────────────────
-	// On mount and on profile switch: if this profile has no saved active-zone
-	// state, jump to the first zone that still has unchecked tasks across all
-	// acts. After the user navigates, their last position is persisted normally.
+	// One-shot initial-position default: if the user's first session has no
+	// saved zone-by-act, jump to the first uncompleted zone. Runs ONCE per
+	// mount (ref-gated) so React Compiler doesn't flag it as a reactive
+	// setState-in-effect anti-pattern; subsequent profile/character changes
+	// are handled inside their respective handlers.
+	const didInitialPositionRef = useRef(false);
 	useEffect(() => {
-		const savedZoneRaw = localStorage.getItem(getZoneByActKey(profile, activeCharacter));
-		if (savedZoneRaw && savedZoneRaw !== "{}") return; // honor existing position
+		if (didInitialPositionRef.current) return;
+		didInitialPositionRef.current = true;
+		if (Object.keys(activeZoneByAct).length > 0) return;
+		const target = findFirstUncompleted(guide, completed);
+		if (!target) return;
+		setActiveActId(target.actId);
+		setActiveZoneByAct({ [target.actId]: target.zoneIndex });
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-		const savedProgressRaw = localStorage.getItem(getProgressKey(profile, activeCharacter));
-		const progress: Record<string, boolean> = savedProgressRaw
-			? (JSON.parse(savedProgressRaw) as Record<string, boolean>)
-			: {};
-
-		for (const act of guide) {
-			for (let i = 0; i < act.zones.length; i++) {
-				const z = act.zones[i];
-				if (z.tasks.length === 0) continue;
-				const done = z.tasks.every((t) => progress[t.id]);
-				if (!done) {
-					setActiveActId(act.id);
-					setActiveZoneByAct((prev) => ({ ...prev, [act.id]: i }));
-					return;
-				}
-			}
-		}
-		// All zones complete — leave defaults alone.
-	}, [profile, activeCharacter, guide]);
 
 	// ── Autodetect zone subscription ──────────────────────────────────────
 	// `lastDetectedZone` is recorded for every Client.txt zone-entered event,
@@ -355,14 +295,12 @@ function App() {
 	const LEARN_WINDOW_MS = 60_000;
 
 	// Auto-clear the pending unmapped state once the learning window expires
-	// so the banner doesn't linger forever after a missed teach.
+	// so the banner doesn't linger forever after a missed teach. setTimeout
+	// is async so even with `remaining=0` we don't trigger the
+	// "synchronous setState in effect" cascade-render warning.
 	useEffect(() => {
 		if (!pendingUnmapped) return;
-		const remaining = pendingUnmapped.at + LEARN_WINDOW_MS - Date.now();
-		if (remaining <= 0) {
-			setPendingUnmapped(null);
-			return;
-		}
+		const remaining = Math.max(0, pendingUnmapped.at + LEARN_WINDOW_MS - Date.now());
 		const id = setTimeout(() => setPendingUnmapped(null), remaining);
 		return () => clearTimeout(id);
 	}, [pendingUnmapped]);
@@ -472,6 +410,7 @@ function App() {
 		// character keeps its name and progress slot but the leveling content
 		// changes. Persisted via the `characters` effect.
 		setProfile(p);
+		setGemsOpen(false);
 		setCharacters((cs) => {
 			if (!cs[activeCharacter]) {
 				return { ...cs, [activeCharacter]: { class: p, createdAt: Date.now() } };
@@ -479,8 +418,19 @@ function App() {
 			if (cs[activeCharacter].class === p) return cs;
 			return { ...cs, [activeCharacter]: { ...cs[activeCharacter], class: p } };
 		});
-		setCompleted(loadProgress(p, activeCharacter));
-		setActiveZoneByAct(loadZoneByAct(p, activeCharacter));
+		const nextCompleted = loadProgress(p, activeCharacter);
+		const nextZones = loadZoneByAct(p, activeCharacter);
+		setCompleted(nextCompleted);
+		setActiveZoneByAct(nextZones);
+		// If the new (profile, character) combo has no saved position, jump
+		// to the first uncompleted zone across the new merged guide.
+		if (Object.keys(nextZones).length === 0) {
+			const target = findFirstUncompleted(getMergedGuide(p), nextCompleted);
+			if (target) {
+				setActiveActId(target.actId);
+				setActiveZoneByAct({ [target.actId]: target.zoneIndex });
+			}
+		}
 	};
 
 	const handleCharacterChange = (name: string) => {
@@ -496,8 +446,19 @@ function App() {
 		const targetClass = characters[trimmed]?.class ?? profile;
 		setProfile(targetClass);
 		setActiveCharacter(trimmed);
-		setCompleted(loadProgress(targetClass, trimmed));
-		setActiveZoneByAct(loadZoneByAct(targetClass, trimmed));
+		setGemsOpen(false);
+		const nextCompleted = loadProgress(targetClass, trimmed);
+		const nextZones = loadZoneByAct(targetClass, trimmed);
+		setCompleted(nextCompleted);
+		setActiveZoneByAct(nextZones);
+		// Jump to first uncompleted zone for new / freshly-reset characters.
+		if (Object.keys(nextZones).length === 0) {
+			const target = findFirstUncompleted(getMergedGuide(targetClass), nextCompleted);
+			if (target) {
+				setActiveActId(target.actId);
+				setActiveZoneByAct({ [target.actId]: target.zoneIndex });
+			}
+		}
 	};
 
 	const handleDeleteCharacter = (name: string) => {
@@ -638,7 +599,7 @@ function App() {
 				/>
 			) : (
 				<>
-			<ActTabs acts={guide} activeActId={activeActId} onSelectAct={setActiveActId} />
+			<ActTabs acts={guide} activeActId={activeActId} onSelectAct={(id) => { setActiveActId(id); setGemsOpen(false); }} />
 
 			{!gemsOpen && (
 				<>
@@ -670,7 +631,7 @@ function App() {
 				</>
 			)}
 
-			<GemsPanel act={activeActId} profile={profile} open={gemsOpen} onToggle={toggleGems} />
+			<GemsPanel key={`${profile}:${activeActId}`} act={activeActId} profile={profile} open={gemsOpen} onToggle={toggleGems} />
 				</>
 			)}
 		</div>

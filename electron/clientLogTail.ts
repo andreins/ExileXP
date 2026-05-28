@@ -6,6 +6,13 @@ import { BrowserWindow } from "electron";
 // embedded control sequences that broke the previous `\.$` anchor).
 const ZONE_RE = /You have entered ([^.\r\n]+?)\./;
 const GEN_RE  = /Generating level \d+ area "([^"]+)"/;
+// PoE2 also writes `[SCENE] Set Source [<Display Name>]` on every transition.
+// This is the cleanest live signal: scene name is the in-game display name
+// directly, with no internal-ID lookup needed. Values "(null)" and
+// "(unknown)" are between-scenes / character-select markers — we hide on
+// those rather than trying to switch the zone.
+const SCENE_RE = /\[SCENE\] Set Source \[(.+?)\]/;
+const SCENE_BLANK = new Set(["(null)", "(unknown)"]);
 
 // PoE2 internal area IDs → display names.
 // Sourced from poe2db.tw (campaign WorldAreas pages) — every entry below
@@ -96,7 +103,16 @@ const INTERNAL_TO_DISPLAY: Record<string, string> = {
 	G4_11_1a: "Ngakanu",
 };
 
-export function createClientLogTail(getPath: () => string | null, win: BrowserWindow) {
+type TailHooks = {
+	onSceneCleared?: () => void;
+	onZoneEntered?: () => void;
+};
+
+export function createClientLogTail(
+	getPath: () => string | null,
+	win: BrowserWindow,
+	hooks: TailHooks = {},
+) {
 	let watching: { path: string; offset: number } | null = null;
 
 	function stop() {
@@ -114,13 +130,32 @@ export function createClientLogTail(getPath: () => string | null, win: BrowserWi
 		console.log("[clientLogTail] watching", p, "size=" + stat.size);
 
 		function emit(line: string) {
+			// SCENE — primary live signal. Fires on every zone transition and
+			// also when the player is in a between-scenes state.
+			const sm = line.match(SCENE_RE);
+			if (sm) {
+				const scene = sm[1].trim();
+				if (SCENE_BLANK.has(scene)) {
+					console.log("[clientLogTail] scene cleared =", scene);
+					win.webContents.send("overlay:scene-cleared", scene);
+					hooks.onSceneCleared?.();
+				} else {
+					console.log("[clientLogTail] scene =", scene);
+					win.webContents.send("overlay:zone-entered", scene);
+					hooks.onZoneEntered?.();
+				}
+				return;
+			}
+			// "You have entered X." — fallback / catch-up signal.
 			const zm = line.match(ZONE_RE);
 			if (zm) {
 				const zone = zm[1].trim();
 				console.log("[clientLogTail] zone entered (display) =", zone);
 				win.webContents.send("overlay:zone-entered", zone);
+				hooks.onZoneEntered?.();
 				return;
 			}
+			// "Generating level X area Y" — internal IDs, last resort.
 			const gm = line.match(GEN_RE);
 			if (gm) {
 				const raw = gm[1].trim();
@@ -128,11 +163,9 @@ export function createClientLogTail(getPath: () => string | null, win: BrowserWi
 				if (mapped) {
 					console.log("[clientLogTail] zone entered (internal) =", raw, "→", mapped);
 					win.webContents.send("overlay:zone-entered", mapped);
+					hooks.onZoneEntered?.();
 				} else {
 					console.log("[clientLogTail] zone entered (unmapped internal) =", raw);
-					// Renderer routes this through its learned-map; the user can
-					// teach the app by manually clicking the right zone within
-					// the learning window.
 					win.webContents.send("overlay:zone-internal", raw);
 				}
 			}
@@ -152,13 +185,27 @@ export function createClientLogTail(getPath: () => string | null, win: BrowserWi
 				fs.closeSync(fd);
 				const lines = buf.toString("utf8").split(/\r?\n/);
 				let recentInternal: string | null = null;
+				let foundDisplay = false;
+				// Prefer SCENE / "You have entered" lines (display names) over
+				// internal IDs. Walk in reverse and emit the first display-name
+				// match; fall back to the most recent internal ID otherwise.
 				for (let i = lines.length - 1; i >= 0; i--) {
+					const sm = lines[i].match(SCENE_RE);
+					if (sm) {
+						const scene = sm[1].trim();
+						if (!SCENE_BLANK.has(scene)) {
+							console.log("[clientLogTail] catch-up: emitting most-recent scene =", scene);
+							win.webContents.send("overlay:zone-entered", scene);
+							foundDisplay = true;
+							break;
+						}
+					}
 					const zm = lines[i].match(ZONE_RE);
 					if (zm) {
 						const zone = zm[1].trim();
 						console.log("[clientLogTail] catch-up: emitting most-recent zone =", zone);
 						win.webContents.send("overlay:zone-entered", zone);
-						recentInternal = null;
+						foundDisplay = true;
 						break;
 					}
 					if (!recentInternal) {
@@ -166,7 +213,7 @@ export function createClientLogTail(getPath: () => string | null, win: BrowserWi
 						if (gm) recentInternal = gm[1].trim();
 					}
 				}
-				if (recentInternal) {
+				if (!foundDisplay && recentInternal) {
 					const mapped = INTERNAL_TO_DISPLAY[recentInternal];
 					if (mapped) {
 						console.log("[clientLogTail] catch-up: emitting internal-id zone =", recentInternal, "→", mapped);

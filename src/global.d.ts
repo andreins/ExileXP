@@ -14,6 +14,7 @@ declare global {
 			pickClientLogPath: () => Promise<string | null>;
 			onZoneEntered: (cb: (name: string) => void) => () => void;
 			onZoneInternal: (cb: (raw: string) => void) => () => void;
+			onSceneCleared: (cb: (kind: string) => void) => () => void;
 		};
 	}
 }
