@@ -114,6 +114,15 @@ textarea:focus-visible {
 	letter-spacing: 0.02em;
 }
 
+.overlayVersion {
+	font-size: 9px;
+	font-weight: 400;
+	color: var(--text-muted);
+	letter-spacing: 0.04em;
+	margin-left: 2px;
+	font-variant-numeric: tabular-nums;
+}
+
 .clickThroughBtn {
 	-webkit-app-region: no-drag;
 	width: 22px;

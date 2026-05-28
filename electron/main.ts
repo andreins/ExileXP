@@ -8,6 +8,18 @@ import { createFocusWatcher } from "./focusWatcher.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Single-instance lock — refuse to spawn a second ExileXP process. If the
+// user double-clicks the .exe again while one is already running, surface
+// the existing window instead of starting a second copy.
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+	app.quit();
+	// Halt module evaluation — nothing below should run in the duplicate
+	// process. Throwing here is the documented Electron pattern; the
+	// `app.quit()` above takes effect on the next tick.
+	throw new Error("Another ExileXP instance is already running");
+}
+
 let win: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let clickThrough = false;
@@ -230,6 +242,17 @@ function createTray() {
 		win.on("hide", updateTrayMenu);
 	}
 }
+
+// When a second .exe is launched while we already hold the lock, Electron
+// notifies us instead of starting a new process. Surface the existing
+// window so the user knows the app is already running.
+app.on("second-instance", () => {
+	if (!win) return;
+	userHidden = false; // clear any sticky Ctrl+Shift+H pin
+	if (win.isMinimized()) win.restore();
+	if (!win.isVisible()) win.show();
+	win.focus();
+});
 
 app.whenReady().then(() => {
 	if (process.platform === "win32") {

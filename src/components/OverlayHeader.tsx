@@ -59,7 +59,9 @@ export default function OverlayHeader({ profile, clickThrough, onToggleClickThro
 	return (
 		<div className="overlayHeader">
 			<div className="overlayHeaderLeft">
-				<span className="overlayTitle">ExileXP</span>
+				<span className="overlayTitle">
+					ExileXP <span className="overlayVersion">v{__APP_VERSION__}</span>
+				</span>
 				<span className="overlayHint">Ctrl+Shift+H(ide)</span>
 			</div>
 			<div className="overlayHeaderRight">

@@ -4,6 +4,7 @@ type Props = {
 	activeIndex: number;
 	totalZones: number;
 	isZoneDone: boolean;
+	canCatchUp: boolean;
 	onPrev: () => void;
 	onNext: () => void;
 	onMarkDone: () => void;
@@ -11,7 +12,7 @@ type Props = {
 	currentZoneName: string | null;
 };
 
-export default function ZoneNav({ activeIndex, totalZones, isZoneDone, onPrev, onNext, onMarkDone, onCatchUp, currentZoneName }: Props) {
+export default function ZoneNav({ activeIndex, totalZones, isZoneDone, canCatchUp, onPrev, onNext, onMarkDone, onCatchUp, currentZoneName }: Props) {
 	const [confirming, setConfirming] = useState(false);
 	const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -53,13 +54,15 @@ export default function ZoneNav({ activeIndex, totalZones, isZoneDone, onPrev, o
 				‹ Prev
 			</button>
 
-			<button
-				className={`zoneNavBtn zoneNavBtn--catchup ${confirming ? "zoneNavBtn--confirming" : ""}`}
-				onClick={handleCatchUp}
-				title={catchUpTitle}
-			>
-				{catchUpLabel}
-			</button>
+			{canCatchUp && (
+				<button
+					className={`zoneNavBtn zoneNavBtn--catchup ${confirming ? "zoneNavBtn--confirming" : ""}`}
+					onClick={handleCatchUp}
+					title={catchUpTitle}
+				>
+					{catchUpLabel}
+				</button>
+			)}
 
 			<button
 				className={`zoneNavBtn zoneNavBtn--complete ${isZoneDone ? "zoneNavBtn--done" : ""}`}

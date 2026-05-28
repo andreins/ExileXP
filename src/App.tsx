@@ -94,7 +94,10 @@ function App() {
 		const chars = loadCharacters();
 		if (chars[activeCharacter]) return chars[activeCharacter].class;
 		const saved = localStorage.getItem("poe2-overlay-profile");
-		return saved === "monk" ? "monk" : "standard";
+		// Default to Monk for first-time users — that's what the project's
+		// curated content actually covers. Honour an explicit "standard"
+		// save so existing setups don't flip on upgrade.
+		return saved === "standard" ? "standard" : "monk";
 	});
 
 	// ── Guide (memoized per profile) ─────────────────────────────────────
@@ -163,6 +166,30 @@ function App() {
 	const isZoneDone = activeZone
 		? activeZone.tasks.length > 0 && activeZone.tasks.every((t) => completed[t.id])
 		: false;
+
+	// True when at least one task in any zone STRICTLY BEFORE the active
+	// zone is still unchecked — the only case where the "Catch up" button
+	// has anything to do. Hidden otherwise so it doesn't bait clicks on a
+	// fresh character (everything before is already empty) or after a full
+	// catch-up.
+	const canCatchUp = useMemo(() => {
+		for (const act of guide) {
+			if (act.id === activeActId) {
+				for (let i = 0; i < activeZoneIndex; i++) {
+					for (const task of act.zones[i].tasks) {
+						if (!completed[task.id]) return true;
+					}
+				}
+				return false;
+			}
+			for (const zone of act.zones) {
+				for (const task of zone.tasks) {
+					if (!completed[task.id]) return true;
+				}
+			}
+		}
+		return false;
+	}, [guide, activeActId, activeZoneIndex, completed]);
 
 	// ── Zone lookup index for autodetect ──────────────────────────────────
 	const zoneIndex = useMemo(() => buildIndex(guide), [guide]);
@@ -684,6 +711,7 @@ function App() {
 							activeIndex={activeZoneIndex}
 							totalZones={activeAct.zones.length}
 							isZoneDone={isZoneDone}
+							canCatchUp={canCatchUp}
 							onPrev={() => setZoneIndex(activeZoneIndex - 1)}
 							onNext={() => setZoneIndex(activeZoneIndex + 1)}
 							onMarkDone={markZoneDone}

@@ -1,6 +1,9 @@
 export {};
 
 declare global {
+	// Injected at build time by vite.config.ts from package.json#version.
+	const __APP_VERSION__: string;
+
 	interface Window {
 		overlay?: {
 			setClickThrough: (value: boolean) => Promise<boolean>;
