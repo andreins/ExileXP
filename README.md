@@ -1,14 +1,17 @@
 # ExileXP
 
-A Path of Exile 2 leveling overlay for players who want to **optimize their campaign run but don't yet know every skip and shortcut by heart**.
+A Path of Exile 2 leveling overlay for players who want to **optimize their league start campaign run but don't yet know every skip and shortcut by heart**.
 
-Primarily a tailored **Monk** experience, heavily inspired by [**FGKorbyn21's monk leveling guide**](https://mobalytics.gg/poe-2/profile/fgkorbyn21/builds/0-5-league-start-monk-leveling-guide) (Mobalytics) and his [YouTube channel](https://www.youtube.com/@FGKorbyn21). The Standard profile is derived from [Domistae's poe2-leveling](https://domistae.github.io/poe2-leveling/) as a class-agnostic baseline.
+Primarily a tailored **League Starter Monk** experience, heavily inspired by [**FGKorbyn21's monk leveling guide**](https://mobalytics.gg/poe-2/profile/fgkorbyn21/builds/0-5-league-start-monk-leveling-guide) (Mobalytics) and his [YouTube channel](https://www.youtube.com/@FGKorbyn21). The Standard profile is derived from [Domistae's poe2-leveling](https://domistae.github.io/poe2-leveling/) as a class-agnostic baseline.
 
 If you main something other than Monk, **fork this repo and adapt** the profile data to your Mobalytics page / class of choice — the profile system was built specifically so a new class can be a single file under `src/data/profiles/`. PRs welcome.
 
-<p align="center">
-  <img src="docs/images/hero.png" alt="ExileXP overlay during Act 1" width="420">
-</p>
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/images/hero.png" alt="ExileXP overlay during Act 1" width="380"></td>
+    <td align="center"><img src="docs/images/gems-overlay.png" alt="Skill Gems panel overlaid in-game" width="380"></td>
+  </tr>
+</table>
 
 ## Screenshots
 
