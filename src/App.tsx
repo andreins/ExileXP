@@ -11,59 +11,112 @@ import ZoneCard from "./components/ZoneCard";
 import ZoneNav from "./components/ZoneNav";
 import GemsPanel from "./components/GemsPanel";
 
-const STORAGE_VERSION = "3";
+const STORAGE_VERSION = "4";
+const DEFAULT_CHARACTER_NAME = "Default";
 
 // ── Storage helpers ────────────────────────────────────────────────────────
+// v4: progress and zone-by-act keys are now namespaced by (profile, character)
+// so two characters of the same class don't share a slot. Class profile drives
+// content; character drives progress.
 
-function getProgressKey(p: ProfileId) {
-	return `poe2-overlay-progress:${p}`;
+function getProgressKey(p: ProfileId, character: string) {
+	return `poe2-overlay-progress:${p}:${character}`;
 }
 
-function getZoneByActKey(p: ProfileId) {
-	return `poe2-overlay-active-zone-by-act:${p}`;
+function getZoneByActKey(p: ProfileId, character: string) {
+	return `poe2-overlay-active-zone-by-act:${p}:${character}`;
 }
 
-function loadProgressForProfile(profile: ProfileId): Record<string, boolean> {
+function loadProgress(profile: ProfileId, character: string): Record<string, boolean> {
 	try {
-		const raw = localStorage.getItem(getProgressKey(profile));
+		const raw = localStorage.getItem(getProgressKey(profile, character));
 		return raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
 	} catch {
 		return {};
 	}
 }
 
-function loadZoneByActForProfile(profile: ProfileId): Record<string, number> {
+function loadZoneByAct(profile: ProfileId, character: string): Record<string, number> {
 	try {
-		const raw = localStorage.getItem(getZoneByActKey(profile));
+		const raw = localStorage.getItem(getZoneByActKey(profile, character));
 		return raw ? (JSON.parse(raw) as Record<string, number>) : {};
 	} catch {
 		return {};
 	}
 }
 
-// v2 → v3 migration: copy old flat keys to :standard namespaced keys
+type CharacterRecord = { class: ProfileId; createdAt: number };
+
+function loadCharacters(): Record<string, CharacterRecord> {
+	try {
+		const raw = localStorage.getItem("poe2-overlay-characters");
+		return raw ? (JSON.parse(raw) as Record<string, CharacterRecord>) : {};
+	} catch {
+		return {};
+	}
+}
+
+// Migration: v2 used flat keys, v3 used :<profile> keys, v4 uses
+// :<profile>:<character>. Roll forward in steps.
 function runMigration() {
 	try {
 		const version = localStorage.getItem("poe2-overlay-version");
 		if (version === STORAGE_VERSION) return;
 
-		// Copy legacy progress to :standard if the namespaced key is absent
+		// v2 → v3: flat keys → :<profile> (only :standard since old data was
+		// generic). Keep the v3 step in case anyone is still on v2 → we then
+		// chain into v3 → v4 below.
 		const legacyProgress = localStorage.getItem("poe2-overlay-progress");
-		const standardProgressKey = getProgressKey("standard");
-		if (legacyProgress && !localStorage.getItem(standardProgressKey)) {
-			localStorage.setItem(standardProgressKey, legacyProgress);
+		const standardKey3 = `poe2-overlay-progress:standard`;
+		if (legacyProgress && !localStorage.getItem(standardKey3)) {
+			localStorage.setItem(standardKey3, legacyProgress);
+		}
+		const legacyZone = localStorage.getItem("poe2-overlay-active-zone-by-act");
+		const standardZoneKey3 = `poe2-overlay-active-zone-by-act:standard`;
+		if (legacyZone && !localStorage.getItem(standardZoneKey3)) {
+			localStorage.setItem(standardZoneKey3, legacyZone);
 		}
 
-		// Copy legacy zone-by-act to :standard if absent
-		const legacyZoneByAct = localStorage.getItem("poe2-overlay-active-zone-by-act");
-		const standardZoneKey = getZoneByActKey("standard");
-		if (legacyZoneByAct && !localStorage.getItem(standardZoneKey)) {
-			localStorage.setItem(standardZoneKey, legacyZoneByAct);
+		// v3 → v4: hoist any :<profile> keys onto a Default character slot.
+		// If both :standard and :monk exist, each becomes its own character
+		// named "Default Standard" / "Default Monk" so the user can rename
+		// them in Settings.
+		let chars = loadCharacters();
+		const profiles: ProfileId[] = ["standard", "monk"];
+		for (const p of profiles) {
+			const oldProgressKey = `poe2-overlay-progress:${p}`;
+			const oldZoneKey = `poe2-overlay-active-zone-by-act:${p}`;
+			const oldProgress = localStorage.getItem(oldProgressKey);
+			const oldZone = localStorage.getItem(oldZoneKey);
+			if (oldProgress || oldZone) {
+				// Pick a character name unique to this profile.
+				const charName = Object.keys(chars).length === 0
+					? DEFAULT_CHARACTER_NAME
+					: `Default ${p[0].toUpperCase()}${p.slice(1)}`;
+				if (!chars[charName]) {
+					chars[charName] = { class: p, createdAt: Date.now() };
+				}
+				if (oldProgress) {
+					localStorage.setItem(getProgressKey(p, charName), oldProgress);
+				}
+				if (oldZone) {
+					localStorage.setItem(getZoneByActKey(p, charName), oldZone);
+				}
+			}
+		}
+		if (Object.keys(chars).length > 0) {
+			localStorage.setItem("poe2-overlay-characters", JSON.stringify(chars));
+			if (!localStorage.getItem("poe2-overlay-active-character")) {
+				// Prefer the one matching the saved active profile.
+				const savedProfile = (localStorage.getItem("poe2-overlay-profile") as ProfileId | null) ?? "standard";
+				const match = Object.entries(chars).find(([, rec]) => rec.class === savedProfile)?.[0];
+				localStorage.setItem("poe2-overlay-active-character", match ?? Object.keys(chars)[0]);
+			}
 		}
 
 		localStorage.setItem("poe2-overlay-version", STORAGE_VERSION);
 	} catch {
-		// ignore
+		// ignore — migration is best-effort
 	}
 }
 
@@ -73,8 +126,23 @@ runMigration();
 // ── App ────────────────────────────────────────────────────────────────────
 
 function App() {
+	// ── Characters (per-character progress slots) ────────────────────────
+	const [characters, setCharacters] = useState<Record<string, CharacterRecord>>(() => loadCharacters());
+	const [activeCharacter, setActiveCharacter] = useState<string>(() => {
+		const saved = localStorage.getItem("poe2-overlay-active-character");
+		if (saved) return saved;
+		const chars = loadCharacters();
+		const first = Object.keys(chars)[0];
+		return first ?? DEFAULT_CHARACTER_NAME;
+	});
+
 	// ── Profile state ────────────────────────────────────────────────────
+	// Profile is derived from the active character's assigned class. If the
+	// character hasn't been registered yet (fresh install), fall back to the
+	// last manually-saved profile or "standard".
 	const [profile, setProfile] = useState<ProfileId>(() => {
+		const chars = loadCharacters();
+		if (chars[activeCharacter]) return chars[activeCharacter].class;
 		const saved = localStorage.getItem("poe2-overlay-profile");
 		return saved === "monk" ? "monk" : "standard";
 	});
@@ -82,9 +150,9 @@ function App() {
 	// ── Guide (memoized per profile) ─────────────────────────────────────
 	const guide = useMemo(() => getMergedGuide(profile), [profile]);
 
-	// ── Progress (per-profile, loaded on mount/switch) ───────────────────
+	// ── Progress (per-character, loaded on mount and on character switch) ─
 	const [completed, setCompleted] = useState<Record<string, boolean>>(() =>
-		loadProgressForProfile(profile)
+		loadProgress(profile, activeCharacter)
 	);
 
 	// ── Active act ───────────────────────────────────────────────────────
@@ -94,9 +162,9 @@ function App() {
 		return valid ? valid.id : guide[0].id;
 	});
 
-	// ── Active zone by act (per-profile) ─────────────────────────────────
+	// ── Active zone by act (per-character) ───────────────────────────────
 	const [activeZoneByAct, setActiveZoneByAct] = useState<Record<string, number>>(() =>
-		loadZoneByActForProfile(profile)
+		loadZoneByAct(profile, activeCharacter)
 	);
 
 	// ── Autodetect ───────────────────────────────────────────────────────
@@ -146,20 +214,28 @@ function App() {
 
 	// ── Persistence effects ───────────────────────────────────────────────
 	useEffect(() => {
-		localStorage.setItem(getProgressKey(profile), JSON.stringify(completed));
-	}, [completed, profile]);
+		localStorage.setItem(getProgressKey(profile, activeCharacter), JSON.stringify(completed));
+	}, [completed, profile, activeCharacter]);
 
 	useEffect(() => {
 		localStorage.setItem("poe2-overlay-active-act", activeActId);
 	}, [activeActId]);
 
 	useEffect(() => {
-		localStorage.setItem(getZoneByActKey(profile), JSON.stringify(activeZoneByAct));
-	}, [activeZoneByAct, profile]);
+		localStorage.setItem(getZoneByActKey(profile, activeCharacter), JSON.stringify(activeZoneByAct));
+	}, [activeZoneByAct, profile, activeCharacter]);
 
 	useEffect(() => {
 		localStorage.setItem("poe2-overlay-profile", profile);
 	}, [profile]);
+
+	useEffect(() => {
+		localStorage.setItem("poe2-overlay-active-character", activeCharacter);
+	}, [activeCharacter]);
+
+	useEffect(() => {
+		localStorage.setItem("poe2-overlay-characters", JSON.stringify(characters));
+	}, [characters]);
 
 	useEffect(() => {
 		localStorage.setItem("poe2-overlay-autodetect", autodetect);
@@ -214,10 +290,10 @@ function App() {
 	// state, jump to the first zone that still has unchecked tasks across all
 	// acts. After the user navigates, their last position is persisted normally.
 	useEffect(() => {
-		const savedZoneRaw = localStorage.getItem(getZoneByActKey(profile));
+		const savedZoneRaw = localStorage.getItem(getZoneByActKey(profile, activeCharacter));
 		if (savedZoneRaw && savedZoneRaw !== "{}") return; // honor existing position
 
-		const savedProgressRaw = localStorage.getItem(getProgressKey(profile));
+		const savedProgressRaw = localStorage.getItem(getProgressKey(profile, activeCharacter));
 		const progress: Record<string, boolean> = savedProgressRaw
 			? (JSON.parse(savedProgressRaw) as Record<string, boolean>)
 			: {};
@@ -235,7 +311,7 @@ function App() {
 			}
 		}
 		// All zones complete — leave defaults alone.
-	}, [profile, guide]);
+	}, [profile, activeCharacter, guide]);
 
 	// ── Autodetect zone subscription ──────────────────────────────────────
 	// `lastDetectedZone` is recorded for every Client.txt zone-entered event,
@@ -392,11 +468,62 @@ function App() {
 	};
 
 	const handleProfileChange = (p: ProfileId) => {
-		// Flush current progress is already handled by the persistence effect.
-		// Load the new profile's progress and zone-by-act.
+		// Switching class profile also re-classes the active character: the
+		// character keeps its name and progress slot but the leveling content
+		// changes. Persisted via the `characters` effect.
 		setProfile(p);
-		setCompleted(loadProgressForProfile(p));
-		setActiveZoneByAct(loadZoneByActForProfile(p));
+		setCharacters((cs) => {
+			if (!cs[activeCharacter]) {
+				return { ...cs, [activeCharacter]: { class: p, createdAt: Date.now() } };
+			}
+			if (cs[activeCharacter].class === p) return cs;
+			return { ...cs, [activeCharacter]: { ...cs[activeCharacter], class: p } };
+		});
+		setCompleted(loadProgress(p, activeCharacter));
+		setActiveZoneByAct(loadZoneByAct(p, activeCharacter));
+	};
+
+	const handleCharacterChange = (name: string) => {
+		if (!name || name === activeCharacter) return;
+		const trimmed = name.trim();
+		if (!trimmed) return;
+		// Auto-register the character against the current class profile if
+		// it's brand new. Otherwise use its stored class.
+		setCharacters((cs) => {
+			if (cs[trimmed]) return cs;
+			return { ...cs, [trimmed]: { class: profile, createdAt: Date.now() } };
+		});
+		const targetClass = characters[trimmed]?.class ?? profile;
+		setProfile(targetClass);
+		setActiveCharacter(trimmed);
+		setCompleted(loadProgress(targetClass, trimmed));
+		setActiveZoneByAct(loadZoneByAct(targetClass, trimmed));
+	};
+
+	const handleDeleteCharacter = (name: string) => {
+		if (!characters[name]) return;
+		// Wipe stored progress for the character across both class slots
+		// (in case it was re-classed at some point).
+		for (const p of ["standard", "monk"] as ProfileId[]) {
+			localStorage.removeItem(getProgressKey(p, name));
+			localStorage.removeItem(getZoneByActKey(p, name));
+		}
+		setCharacters((cs) => {
+			const next = { ...cs };
+			delete next[name];
+			return next;
+		});
+		// If we deleted the active character, fall back to another known
+		// character or the default slot.
+		if (activeCharacter === name) {
+			const remaining = Object.keys(characters).filter((c) => c !== name);
+			const fallback = remaining[0] ?? DEFAULT_CHARACTER_NAME;
+			setActiveCharacter(fallback);
+			const fallbackClass = characters[fallback]?.class ?? profile;
+			setProfile(fallbackClass);
+			setCompleted(loadProgress(fallbackClass, fallback));
+			setActiveZoneByAct(loadZoneByAct(fallbackClass, fallback));
+		}
 	};
 
 	const handleClientLogPathChange = async (p: string) => {
@@ -440,8 +567,10 @@ function App() {
 	};
 
 	const handleResetProfile = () => {
-		localStorage.removeItem(getProgressKey(profile));
-		localStorage.removeItem(getZoneByActKey(profile));
+		// "Reset profile" now wipes the ACTIVE CHARACTER'S progress only —
+		// other characters on the same class profile are untouched.
+		localStorage.removeItem(getProgressKey(profile, activeCharacter));
+		localStorage.removeItem(getZoneByActKey(profile, activeCharacter));
 		setCompleted({});
 		setActiveZoneByAct({});
 	};
@@ -494,7 +623,11 @@ function App() {
 					lastDetectedZone={lastDetectedZone}
 					focusTracking={focusTracking}
 					learnedMap={learnedMap}
+					characters={characters}
+					activeCharacter={activeCharacter}
 					onProfileChange={handleProfileChange}
+					onCharacterChange={handleCharacterChange}
+					onDeleteCharacter={handleDeleteCharacter}
 					onAutodetectChange={setAutodetect}
 					onClientLogPathChange={handleClientLogPathChange}
 					onFocusTrackingChange={handleFocusTrackingChange}

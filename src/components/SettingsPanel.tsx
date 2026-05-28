@@ -9,6 +9,8 @@ function formatAgo(at: number): string {
 	return `${Math.round(s / 3600)}h ago`;
 }
 
+type CharacterRecord = { class: ProfileId; createdAt: number };
+
 type Props = {
 	profile: ProfileId;
 	autodetect: "on" | "off";
@@ -17,7 +19,11 @@ type Props = {
 	lastDetectedZone: { name: string; at: number; unmapped?: boolean } | null;
 	focusTracking: "on" | "off";
 	learnedMap: Record<string, string>;
+	characters: Record<string, CharacterRecord>;
+	activeCharacter: string;
 	onProfileChange: (p: ProfileId) => void;
+	onCharacterChange: (name: string) => void;
+	onDeleteCharacter: (name: string) => void;
 	onAutodetectChange: (v: "on" | "off") => void;
 	onClientLogPathChange: (p: string) => void;
 	onFocusTrackingChange: (v: "on" | "off") => void;
@@ -35,7 +41,11 @@ export default function SettingsPanel({
 	lastDetectedZone,
 	focusTracking,
 	learnedMap,
+	characters,
+	activeCharacter,
 	onProfileChange,
+	onCharacterChange,
+	onDeleteCharacter,
 	onAutodetectChange,
 	onClientLogPathChange,
 	onFocusTrackingChange,
@@ -46,7 +56,31 @@ export default function SettingsPanel({
 }: Props) {
 	const [toast, setToast] = useState<string | null>(null);
 	const [importText, setImportText] = useState("");
+	const [newCharName, setNewCharName] = useState("");
 	const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	function handleAddCharacter() {
+		const name = newCharName.trim();
+		if (!name) return;
+		if (characters[name]) {
+			showToast(`Character "${name}" already exists`);
+			return;
+		}
+		onCharacterChange(name);
+		setNewCharName("");
+		showToast(`Switched to "${name}"`);
+	}
+
+	function handleSelectCharacter(name: string) {
+		if (name === activeCharacter) return;
+		onCharacterChange(name);
+	}
+
+	function handleDeleteCharacterClick(name: string) {
+		if (!confirm(`Delete character "${name}" and wipe its progress? This can't be undone.`)) return;
+		onDeleteCharacter(name);
+		showToast(`Deleted "${name}"`);
+	}
 
 	// Force re-render every 5s so the "X ago" timestamp updates while the
 	// settings panel is open.
@@ -169,7 +203,7 @@ export default function SettingsPanel({
 	}
 
 	function handleResetProfile() {
-		if (!confirm(`Reset all progress for the ${profile} profile?`)) return;
+		if (!confirm(`Reset progress for "${activeCharacter}" (${profile})? Other characters are not affected.`)) return;
 		onResetProfile();
 	}
 
@@ -189,15 +223,68 @@ export default function SettingsPanel({
 		<div className="settingsPanel">
 			{toast && <div className="settingsToast">{toast}</div>}
 
+			{/* Character */}
+			<div className="settingsRow settingsRow--column">
+				<span className="settingsLabel">Character</span>
+				<div className="settingsPathRow">
+					<select
+						className="settingsInput"
+						value={activeCharacter}
+						onChange={(e) => handleSelectCharacter(e.target.value)}
+					>
+						{Object.keys(characters).length === 0 && (
+							<option value={activeCharacter}>{activeCharacter}</option>
+						)}
+						{Object.entries(characters)
+							.sort(([a], [b]) => a.localeCompare(b))
+							.map(([name, rec]) => (
+								<option key={name} value={name}>
+									{name} [{rec.class}]
+								</option>
+							))}
+					</select>
+					{characters[activeCharacter] && Object.keys(characters).length > 1 && (
+						<button
+							className="settingsLinkBtn"
+							onClick={(e) => { e.currentTarget.blur(); handleDeleteCharacterClick(activeCharacter); }}
+							title={`Delete ${activeCharacter}`}
+						>
+							Delete
+						</button>
+					)}
+				</div>
+				<div className="settingsPathRow">
+					<input
+						type="text"
+						className="settingsInput"
+						placeholder="New character name…"
+						value={newCharName}
+						onChange={(e) => setNewCharName(e.target.value)}
+						onKeyDown={(e) => { if (e.key === "Enter") handleAddCharacter(); }}
+						maxLength={48}
+					/>
+					<button
+						className="settingsActionBtn"
+						onClick={(e) => { e.currentTarget.blur(); handleAddCharacter(); }}
+						disabled={!newCharName.trim()}
+					>
+						Add
+					</button>
+				</div>
+				<span className="settingsMuted">
+					Each character has its own progress slot. The class profile below applies to the active character.
+				</span>
+			</div>
+
 			{/* Profile */}
 			<div className="settingsRow">
-				<span className="settingsLabel">Profile</span>
+				<span className="settingsLabel">Class profile</span>
 				<div className="settingsSegmented">
 					{profiles.map((p) => (
 						<button
 							key={p.id}
 							className={`settingsSegBtn${profile === p.id ? " settingsSegBtn--active" : ""}`}
-							onClick={() => onProfileChange(p.id)}
+							onClick={(e) => { e.currentTarget.blur(); onProfileChange(p.id); }}
 						>
 							{p.label}
 						</button>
@@ -301,7 +388,7 @@ export default function SettingsPanel({
 			<div className="settingsDivider" />
 			<div className="settingsRow settingsRow--spaced">
 				<button className="settingsDangerBtn" onClick={handleResetProfile}>
-					Reset {profile} profile
+					Reset "{activeCharacter}"
 				</button>
 				<button className="settingsDangerBtn settingsDangerBtn--all" onClick={handleResetAll}>
 					Reset everything
