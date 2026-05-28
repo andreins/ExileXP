@@ -12,6 +12,10 @@ let win: BrowserWindow | null = null;
 let clickThrough = false;
 let desiredHeight = 390;
 let desiredWidth = 460;
+// Tracks Ctrl+Shift+H state: when true, the user explicitly hid the window
+// and the focus-watcher must not re-show it on the next foreground change.
+// Cleared when the user presses Ctrl+Shift+H again to bring the window back.
+let userHidden = false;
 
 // ── Client.txt auto-detection ───────────────────────────────────────────────
 // Cross common drives × common install patterns. Order matters: first match wins.
@@ -105,7 +109,9 @@ app.whenReady().then(() => {
 	logTail.start();
 
 	// Foreground-process watcher (Windows only) — toggled by the renderer.
-	const focusWatcher = createFocusWatcher(() => win);
+	// We pass an `isUserHidden` predicate so the watcher refuses to re-show
+	// the window after the user manually pressed Ctrl+Shift+H.
+	const focusWatcher = createFocusWatcher(() => win, () => userHidden);
 
 	globalShortcut.register("CommandOrControl+Shift+X", () => {
 		if (!win) return;
@@ -120,8 +126,10 @@ app.whenReady().then(() => {
 
 		if (win.isVisible()) {
 			win.hide();
+			userHidden = true; // pin hidden — focus-watcher won't override
 		} else {
 			win.show();
+			userHidden = false; // unpin — focus-watcher resumes control
 		}
 	});
 

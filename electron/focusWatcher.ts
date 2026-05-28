@@ -38,7 +38,10 @@ while ($true) {
 }
 `;
 
-export function createFocusWatcher(getWindow: () => BrowserWindow | null) {
+export function createFocusWatcher(
+	getWindow: () => BrowserWindow | null,
+	isUserHidden: () => boolean = () => false,
+) {
 	let child: ChildProcess | null = null;
 	let enabled = false;
 	let lineBuffer = "";
@@ -46,6 +49,12 @@ export function createFocusWatcher(getWindow: () => BrowserWindow | null) {
 	function handleProcessName(raw: string) {
 		const win = getWindow();
 		if (!win || !enabled) return;
+		// Respect a manual Ctrl+Shift+H hide — never re-show until the user
+		// presses the shortcut again to clear the pin.
+		if (isUserHidden()) {
+			if (win.isVisible()) win.hide();
+			return;
+		}
 		const name = raw.trim().toLowerCase();
 		if (!name) return;
 

@@ -33,8 +33,25 @@ const INTERNAL_TO_DISPLAY: Record<string, string> = {
 	G1_12: "Ogham Manor",
 	// Act 2
 	G2_town: "The Ardura Caravan",
-	// Act 3
+	// Act 3 — internal IDs use a G3_<part>_<sub> sub-numbering scheme.
+	// Observed: G3_2_1 = Infested Barrens. Extend as more are seen.
 	G3_town: "Ziggurat Encampment",
+	G3_1: "Sandswept Marsh",
+	G3_2: "Jungle Ruins",
+	G3_2_1: "Infested Barrens",
+	G3_3: "The Venom Crypts",
+	G3_4: "Chimeral Wetlands",
+	G3_5: "Jiquani's Machinarium",
+	G3_6: "Jiquani's Sanctum",
+	G3_7: "The Matlan Waterways",
+	G3_8: "The Drowned City",
+	G3_9: "Apex of Filth",
+	G3_10: "The Molten Vault",
+	G3_11: "Azak Bog",
+	G3_12: "Temple of Kopec",
+	G3_13: "Utzaal",
+	G3_14: "Aggorat",
+	G3_15: "The Black Chambers",
 	// Act 4
 	G4_town: "Kingsmarch",
 };
