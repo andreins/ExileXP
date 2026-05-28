@@ -700,6 +700,61 @@ textarea:focus-visible {
 	border-color: rgba(200, 90, 70, 0.45);
 }
 
+/* ── Learned zone mappings list ───────────────────────────── */
+.learnedList {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	max-height: 220px;
+	overflow-y: auto;
+	background: rgba(0, 0, 0, 0.2);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-sm);
+	padding: 4px 6px;
+}
+
+.learnedRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: var(--font-xs);
+}
+
+.learnedRow__raw {
+	color: var(--text-gold-bright);
+	background: rgba(0, 0, 0, 0.3);
+	padding: 1px 4px;
+	border-radius: 2px;
+	font-family: monospace;
+	flex-shrink: 0;
+}
+
+.learnedRow__arrow {
+	color: var(--text-muted);
+}
+
+.learnedRow__name {
+	color: var(--text-body);
+	flex: 1;
+}
+
+.learnedRow__delete {
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	padding: 0 6px;
+	border-radius: 2px;
+	font-size: var(--font-xs);
+	transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.learnedRow__delete:hover {
+	color: #f5b3a0;
+	background: rgba(200, 90, 70, 0.18);
+	border-color: rgba(200, 90, 70, 0.45);
+}
+
 /* ── Credits in Settings ──────────────────────────────────── */
 .settingsCredits__line {
 	font-size: var(--font-sm);

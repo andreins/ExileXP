@@ -245,17 +245,32 @@ function App() {
 
 	// Persisted "learned" mapping from PoE2 internal area IDs (G3_10_Airlock,
 	// etc.) → display names the user taught us by manually clicking the right
-	// zone after the unmapped event fired.
+	// zone after the unmapped event fired. Used as a fallback for IDs not in
+	// the static INTERNAL_TO_DISPLAY table (electron/clientLogTail.ts).
 	const LEARNED_KEY = "poe2-overlay-learned-zone-ids";
-	const learnedMapRef = useRef<Record<string, string>>({});
-	useEffect(() => {
+	const [learnedMap, setLearnedMap] = useState<Record<string, string>>(() => {
 		try {
 			const raw = localStorage.getItem(LEARNED_KEY);
-			if (raw) learnedMapRef.current = JSON.parse(raw) as Record<string, string>;
+			return raw ? (JSON.parse(raw) as Record<string, string>) : {};
 		} catch {
-			learnedMapRef.current = {};
+			return {};
 		}
-	}, []);
+	});
+	useEffect(() => {
+		try {
+			localStorage.setItem(LEARNED_KEY, JSON.stringify(learnedMap));
+		} catch {
+			/* ignore */
+		}
+	}, [learnedMap]);
+	const deleteLearned = (raw: string) => {
+		setLearnedMap((m) => {
+			const next = { ...m };
+			delete next[raw];
+			return next;
+		});
+	};
+	const clearAllLearned = () => setLearnedMap({});
 
 	// Pending unmapped internal ID. While set (≤ 60 s old), the next manual
 	// zone click teaches the app what this ID maps to. Kept in state (not a
@@ -296,7 +311,7 @@ function App() {
 		// Unmapped internal IDs — try the learned map first; otherwise hold
 		// onto the raw ID so the next manual zone click can teach us.
 		const unsubInternal = window.overlay?.onZoneInternal((raw) => {
-			const learned = learnedMapRef.current[raw];
+			const learned = learnedMap[raw];
 			if (learned) {
 				setLastDetectedZone({ name: learned, at: Date.now() });
 				setPendingUnmapped(null);
@@ -312,7 +327,7 @@ function App() {
 			unsubInternal?.();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [autodetect, zoneIndex]);
+	}, [autodetect, zoneIndex, learnedMap]);
 
 	// ── Height sync ───────────────────────────────────────────────────────
 	// ResizeObserver re-measures whenever any descendant changes size — including
@@ -346,12 +361,7 @@ function App() {
 		if (pendingUnmapped && Date.now() - pendingUnmapped.at <= LEARN_WINDOW_MS) {
 			const zone = activeAct.zones[next];
 			if (zone) {
-				learnedMapRef.current[pendingUnmapped.raw] = zone.name;
-				try {
-					localStorage.setItem(LEARNED_KEY, JSON.stringify(learnedMapRef.current));
-				} catch {
-					/* ignore */
-				}
+				setLearnedMap((m) => ({ ...m, [pendingUnmapped.raw]: zone.name }));
 				console.log(`[learn] ${pendingUnmapped.raw} → ${zone.name}`);
 			}
 			setPendingUnmapped(null);
@@ -483,10 +493,13 @@ function App() {
 					defaultClientLogPath={defaultClientLogPath}
 					lastDetectedZone={lastDetectedZone}
 					focusTracking={focusTracking}
+					learnedMap={learnedMap}
 					onProfileChange={handleProfileChange}
 					onAutodetectChange={setAutodetect}
 					onClientLogPathChange={handleClientLogPathChange}
 					onFocusTrackingChange={handleFocusTrackingChange}
+					onDeleteLearned={deleteLearned}
+					onClearAllLearned={clearAllLearned}
 					onResetProfile={handleResetProfile}
 					onResetAll={handleResetAll}
 				/>

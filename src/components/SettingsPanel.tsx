@@ -16,10 +16,13 @@ type Props = {
 	defaultClientLogPath: string;
 	lastDetectedZone: { name: string; at: number; unmapped?: boolean } | null;
 	focusTracking: "on" | "off";
+	learnedMap: Record<string, string>;
 	onProfileChange: (p: ProfileId) => void;
 	onAutodetectChange: (v: "on" | "off") => void;
 	onClientLogPathChange: (p: string) => void;
 	onFocusTrackingChange: (v: "on" | "off") => void;
+	onDeleteLearned: (raw: string) => void;
+	onClearAllLearned: () => void;
 	onResetProfile: () => void;
 	onResetAll: () => void;
 };
@@ -31,10 +34,13 @@ export default function SettingsPanel({
 	defaultClientLogPath,
 	lastDetectedZone,
 	focusTracking,
+	learnedMap,
 	onProfileChange,
 	onAutodetectChange,
 	onClientLogPathChange,
 	onFocusTrackingChange,
+	onDeleteLearned,
+	onClearAllLearned,
 	onResetProfile,
 	onResetAll,
 }: Props) {
@@ -301,6 +307,47 @@ export default function SettingsPanel({
 					Reset everything
 				</button>
 			</div>
+
+			{/* Learned zone mappings */}
+			{Object.keys(learnedMap).length > 0 && (
+				<>
+					<div className="settingsDivider" />
+					<div className="settingsRow settingsRow--column">
+						<div className="settingsRow settingsRow--spaced" style={{ alignItems: "center" }}>
+							<span className="settingsLabel">Learned zone mappings ({Object.keys(learnedMap).length})</span>
+							<button
+								className="settingsLinkBtn"
+								onClick={(e) => { e.currentTarget.blur(); if (confirm("Clear all runtime-learned zone mappings? Static built-in mappings are not affected.")) onClearAllLearned(); }}
+								title="Wipe every runtime-learned mapping"
+							>
+								Clear all
+							</button>
+						</div>
+						<div className="learnedList">
+							{Object.entries(learnedMap)
+								.sort(([a], [b]) => a.localeCompare(b))
+								.map(([raw, name]) => (
+									<div className="learnedRow" key={raw}>
+										<code className="learnedRow__raw">{raw}</code>
+										<span className="learnedRow__arrow">→</span>
+										<span className="learnedRow__name">{name}</span>
+										<button
+											className="learnedRow__delete"
+											onClick={(e) => { e.currentTarget.blur(); onDeleteLearned(raw); }}
+											title={`Forget ${raw} → ${name}`}
+										>
+											✕
+										</button>
+									</div>
+								))}
+						</div>
+						<span className="settingsMuted">
+							Built-in mappings always win — these only fire for IDs not in the shipped table.
+							If a mapping is wrong, delete it and walk into the zone again to re-teach.
+						</span>
+					</div>
+				</>
+			)}
 
 			{/* Credits */}
 			<div className="settingsDivider" />
