@@ -25,4 +25,11 @@ contextBridge.exposeInMainWorld("overlay", {
 			ipcRenderer.removeListener("overlay:zone-entered", handler);
 		};
 	},
+	onZoneInternal: (cb: (raw: string) => void) => {
+		const handler = (_event: unknown, raw: string) => cb(raw);
+		ipcRenderer.on("overlay:zone-internal", handler);
+		return () => {
+			ipcRenderer.removeListener("overlay:zone-internal", handler);
+		};
+	},
 });

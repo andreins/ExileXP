@@ -13,6 +13,7 @@ declare global {
 			getDefaultClientLogPath: () => Promise<string | null>;
 			pickClientLogPath: () => Promise<string | null>;
 			onZoneEntered: (cb: (name: string) => void) => () => void;
+			onZoneInternal: (cb: (raw: string) => void) => () => void;
 		};
 	}
 }

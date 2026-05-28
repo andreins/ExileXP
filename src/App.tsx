@@ -241,20 +241,63 @@ function App() {
 	// `lastDetectedZone` is recorded for every Client.txt zone-entered event,
 	// matched or not, so the Settings panel can show the user that the tail
 	// is actually running (and what raw zone name PoE2 wrote, for debugging).
-	const [lastDetectedZone, setLastDetectedZone] = useState<{ name: string; at: number } | null>(null);
+	const [lastDetectedZone, setLastDetectedZone] = useState<{ name: string; at: number; unmapped?: boolean } | null>(null);
+
+	// Persisted "learned" mapping from PoE2 internal area IDs (G3_10_Airlock,
+	// etc.) → display names the user taught us by manually clicking the right
+	// zone after the unmapped event fired.
+	const LEARNED_KEY = "poe2-overlay-learned-zone-ids";
+	const learnedMapRef = useRef<Record<string, string>>({});
 	useEffect(() => {
-		// We always record the last detected zone for diagnostics, but only
-		// auto-switch the overlay when autodetect is on.
-		const unsub = window.overlay?.onZoneEntered((name) => {
+		try {
+			const raw = localStorage.getItem(LEARNED_KEY);
+			if (raw) learnedMapRef.current = JSON.parse(raw) as Record<string, string>;
+		} catch {
+			learnedMapRef.current = {};
+		}
+	}, []);
+
+	// Pending unmapped internal ID. While set (≤ 60 s old), the next manual
+	// zone click teaches the app what this ID maps to.
+	const pendingUnmappedRef = useRef<{ raw: string; at: number } | null>(null);
+	const LEARN_WINDOW_MS = 60_000;
+
+	const switchToZoneByName = (name: string) => {
+		const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+		const hit = zoneIndex.get(normalize(name));
+		if (!hit) return false; // hideout, side area, etc. — silently ignore
+		setActiveActId(hit.actId);
+		setActiveZoneByAct((prev) => ({ ...prev, [hit.actId]: hit.zoneIndex }));
+		return true;
+	};
+
+	useEffect(() => {
+		// Resolved display names — straight to the index lookup.
+		const unsubEntered = window.overlay?.onZoneEntered((name) => {
 			setLastDetectedZone({ name, at: Date.now() });
+			pendingUnmappedRef.current = null;
 			if (autodetect !== "on") return;
-			const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-			const hit = zoneIndex.get(normalize(name));
-			if (!hit) return; // hideout, side area, town — silently ignore
-			setActiveActId(hit.actId);
-			setActiveZoneByAct((prev) => ({ ...prev, [hit.actId]: hit.zoneIndex }));
+			switchToZoneByName(name);
 		});
-		return unsub ?? undefined;
+		// Unmapped internal IDs — try the learned map first; otherwise hold
+		// onto the raw ID so the next manual zone click can teach us.
+		const unsubInternal = window.overlay?.onZoneInternal((raw) => {
+			const learned = learnedMapRef.current[raw];
+			if (learned) {
+				setLastDetectedZone({ name: learned, at: Date.now() });
+				pendingUnmappedRef.current = null;
+				if (autodetect !== "on") return;
+				switchToZoneByName(learned);
+				return;
+			}
+			setLastDetectedZone({ name: raw, at: Date.now(), unmapped: true });
+			pendingUnmappedRef.current = { raw, at: Date.now() };
+		});
+		return () => {
+			unsubEntered?.();
+			unsubInternal?.();
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [autodetect, zoneIndex]);
 
 	// ── Height sync ───────────────────────────────────────────────────────
@@ -283,6 +326,23 @@ function App() {
 		if (!activeAct.zones.length) return;
 		const next = Math.max(0, Math.min(index, activeAct.zones.length - 1));
 		setActiveZoneByAct((c) => ({ ...c, [activeAct.id]: next }));
+
+		// Learning: if the tail recently emitted an unmapped internal ID,
+		// associate it with the zone the user just clicked.
+		const pending = pendingUnmappedRef.current;
+		if (pending && Date.now() - pending.at <= LEARN_WINDOW_MS) {
+			const zone = activeAct.zones[next];
+			if (zone) {
+				learnedMapRef.current[pending.raw] = zone.name;
+				try {
+					localStorage.setItem(LEARNED_KEY, JSON.stringify(learnedMapRef.current));
+				} catch {
+					/* ignore */
+				}
+				console.log(`[learn] ${pending.raw} → ${zone.name}`);
+			}
+			pendingUnmappedRef.current = null;
+		}
 	};
 
 	const markZoneDone = () => {

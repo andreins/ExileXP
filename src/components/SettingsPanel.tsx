@@ -14,7 +14,7 @@ type Props = {
 	autodetect: "on" | "off";
 	clientLogPath: string;
 	defaultClientLogPath: string;
-	lastDetectedZone: { name: string; at: number } | null;
+	lastDetectedZone: { name: string; at: number; unmapped?: boolean } | null;
 	focusTracking: "on" | "off";
 	onProfileChange: (p: ProfileId) => void;
 	onAutodetectChange: (v: "on" | "off") => void;
@@ -220,10 +220,19 @@ export default function SettingsPanel({
 					<span className="settingsLabel">Only show overlay when Path of Exile 2 is focused</span>
 				</label>
 				{lastDetectedZone ? (
-					<span className="settingsMuted">
-						Last detected: <strong style={{ color: "var(--text-gold)" }}>{lastDetectedZone.name}</strong>
-						{" — "}{formatAgo(lastDetectedZone.at)}
-					</span>
+					lastDetectedZone.unmapped ? (
+						<span className="settingsMuted">
+							Detected unknown area ID:{" "}
+							<strong style={{ color: "var(--text-gold)" }}>{lastDetectedZone.name}</strong>
+							{" — "}{formatAgo(lastDetectedZone.at)}.<br />
+							Close Settings and click the correct zone within 60 s to teach the overlay this mapping.
+						</span>
+					) : (
+						<span className="settingsMuted">
+							Last detected: <strong style={{ color: "var(--text-gold)" }}>{lastDetectedZone.name}</strong>
+							{" — "}{formatAgo(lastDetectedZone.at)}
+						</span>
+					)
 				) : (
 					<span className="settingsMuted">
 						No zone detected yet. Enter or re-enter a zone in PoE2 to verify the tail is working.
