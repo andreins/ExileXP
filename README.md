@@ -1,6 +1,10 @@
 # ExileXP
 
-A Path of Exile 2 leveling overlay — class profiles, skill gem guide, and Client.txt zone autodetect.
+A Path of Exile 2 leveling overlay for players who want to **optimize their campaign run but don't yet know every skip and shortcut by heart**.
+
+Primarily a tailored **Monk** experience, heavily inspired by [**FGKorbyn21's monk leveling guide**](https://mobalytics.gg/poe-2/profile/fgkorbyn21/builds/0-5-league-start-monk-leveling-guide) (Mobalytics) and his [YouTube channel](https://www.youtube.com/@FGKorbyn21). The Standard profile is derived from [Domistae's poe2-leveling](https://domistae.github.io/poe2-leveling/) as a class-agnostic baseline.
+
+If you main something other than Monk, **fork this repo and adapt** the profile data to your Mobalytics page / class of choice — the profile system was built specifically so a new class can be a single file under `src/data/profiles/`. PRs welcome.
 
 <p align="center">
   <img src="docs/images/hero.png" alt="ExileXP overlay during Act 1" width="420">
@@ -17,24 +21,17 @@ A Path of Exile 2 leveling overlay — class profiles, skill gem guide, and Clie
     <td>Monk profile, Act 1 — tasks for the current zone with target level and league rewards.</td>
     <td>Per-act Skill Gems panel: skill + support gems with mapping / bossing notes.</td>
   </tr>
-  <tr>
-    <td><img src="docs/images/settings.png" alt="Settings"></td>
-    <td><img src="docs/images/autodetect.png" alt="Zone autodetect"></td>
-  </tr>
-  <tr>
-    <td>Settings: profile toggle, autodetect, PoE2 folder picker, import/export, catch-up.</td>
-    <td>Walking into a new zone in PoE2 auto-switches the overlay via Client.txt tail.</td>
-  </tr>
 </table>
 
 ## Features
 
-- **Class profiles** — Standard (generic) and Monk (Invoker / quarterstaff). More classes coming. Profiles are full rulesets — they don't stack with each other.
+- **Class profiles** — Standard (generic) and Monk (Invoker / quarterstaff). Profiles are full rulesets — they don't stack with each other.
 - **Curated leveling guide** for Acts 1–4, updated for the 0.5 patch (Verisium Runeforging, Fate of the Vaal, pressure pads, Dreadnought rework, etc.).
 - **Per-act Skill Gems panel** (Monk) — skill + support gem layouts with mapping / bossing / level-up priority notes.
-- **Zone autodetect** — tails `logs/Client.txt` and switches zones automatically as you play.
+- **Zone autodetect** — tails `logs/Client.txt` and switches zones automatically as you play. 60+ internal area IDs ship pre-mapped; anything new is learned at runtime from a single manual click.
 - **Click-through toggle** — let your clicks pass through to the game, with the toggle button itself always clickable.
-- **Per-profile progress**, base64 import/export, per-profile and global reset.
+- **Focus-aware visibility** — hides the overlay when Path of Exile 2 isn't the foreground app.
+- **Per-profile progress**, base64 import/export, per-profile and global reset, "Catch up to current zone" bulk-mark.
 - **Always-on-top** transparent overlay that resizes itself to fit its content.
 
 ## System requirements
@@ -54,24 +51,35 @@ A Path of Exile 2 leveling overlay — class profiles, skill gem guide, and Clie
 | Key | Action |
 |---|---|
 | `Ctrl + Shift + X` | Toggle click-through (overlay still visible, mouse passes through) |
-| `Ctrl + Shift + H` | Show / hide the overlay |
+| `Ctrl + Shift + H` | Show / hide the overlay (sticky — focus-tracking won't override) |
 
 The on-screen ◎/⊘ button toggles click-through too — and it stays clickable even when click-through is on (hover it while click-through is enabled to temporarily wake the cursor).
 
 ## Profiles
 
-- **Standard** — generic campaign guide derived from community references.
-- **Monk** — Invoker / Bell quarterstaff. Adds curated tasks per zone, a Skill Gems panel per act (Acts 1–4 + Interludes), and class-specific notes (Frost Bomb timing, Siphoning Strike → Falling Thunder combos, Hollow Focus / Tempest Bell guidance, etc.).
+- **Standard** — generic campaign guide derived from [Domistae's poe2-leveling](https://domistae.github.io/poe2-leveling/).
+- **Monk** — Invoker / Bell quarterstaff. Curated tasks per zone, a Skill Gems panel per act (Acts 1–4 + Interludes), and class-specific notes (Frost Bomb timing, Siphoning Strike → Falling Thunder combos, Hollow Focus / Tempest Bell guidance, etc.). Built from [FGKorbyn21's monk leveling guide](https://mobalytics.gg/poe-2/profile/fgkorbyn21/builds/0-5-league-start-monk-leveling-guide) with permission-spirit attribution.
 
 Switch profiles in **Settings** (the gear icon, top-right). Each profile has independent progress.
 
 ## Zone autodetect
 
-In Settings → **Path of Exile 2 folder**, click **Browse…** and pick your PoE2 install folder (the one that contains `logs/`). ExileXP looks up `Client.txt` from there and tails it for `You have entered <zone>` events. The overlay switches to the matching zone card automatically.
+In Settings → **Path of Exile 2 folder**, click **Browse…** and pick your PoE2 install folder (the one that contains `logs/`). ExileXP looks up `Client.txt` from there and tails it for `You have entered <zone>` / `Generating level area "..."` events. The overlay switches to the matching zone card automatically.
 
 Default install locations (Steam + standalone, drives C–H) are auto-detected on first launch — most users don't need to touch this.
 
 Toggle **Autodetect zone** off if you'd rather drive zones manually with the **Next / Prev** buttons.
+
+## Forking / adapting for other classes
+
+The profile system was built so adding a new class is small:
+
+1. Drop a new file under `src/data/profiles/<class>.ts` exporting a `ProfileContent` (curated zone tasks/notes per zone — override only what differs from Standard).
+2. Drop a `<class>-gems.ts` exporting `ProfileGems` (skill gem layouts per act).
+3. Add an entry to `src/data/profiles/index.ts`.
+4. Add the profile id to `ProfileId` in `src/types/guide.ts`.
+
+That's it. Build, share, link your Mobalytics / community guide of choice in the Credits section.
 
 ## Development
 
@@ -89,14 +97,18 @@ npm run dist       # Produce release/ExileXP-<version>-portable.exe
 
 ## Roadmap
 
-- More class profiles (Witch, Ranger, Warrior, etc.).
+- More class profiles (Witch, Ranger, Warrior, etc.) — contributions welcome.
 - Real PoE2 gem icons (currently colored letter placeholders).
+- Per-character progress (auto-detected from Client.txt).
+- Level detection / display.
 - Per-zone EXP tracking and pace overlay.
 - macOS / Linux builds if there's demand.
 
 ## Credits
 
-- **[Domistae / poe2-leveling](https://github.com/domistae/poe2-leveling)** — base leveling structure and zone curation that the Standard profile is modeled on (MIT-licensed).
+- **[FGKorbyn21](https://www.youtube.com/@FGKorbyn21)** — the [Monk leveling guide](https://mobalytics.gg/poe-2/profile/fgkorbyn21/builds/0-5-league-start-monk-leveling-guide) on Mobalytics this project's Monk profile is heavily based on. All the route/gem decisions for Monk trace back to his work.
+- **[Domistae / poe2-leveling](https://github.com/domistae/poe2-leveling)** — the class-agnostic Standard profile is modeled on this open-source guide (MIT-licensed).
+- **[poe2db.tw](https://poe2db.tw/)** — used to map PoE2 internal area IDs to display names for the zone-autodetect feature.
 - **Grinding Gear Games** — Path of Exile 2.
 
 ## License
