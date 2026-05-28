@@ -245,36 +245,45 @@ function App() {
 	}, []);
 
 	// ── Autocomplete on zone leave ────────────────────────────────────────
-	// Track the previous (actId, zoneIndex) so we can mark it complete when
-	// the user navigates away. We use a ref (not state) to avoid stale-closure
-	// issues and to prevent triggering the effect itself on every update.
-	const previousZoneRef = useRef<{ actId: ActId; zoneIndex: number } | null>(null);
-
+	// We want autocomplete to fire ONLY when the game tells us the player
+	// physically entered a new zone (autodetect), not when they click
+	// Next/Prev/ProgressStrip themselves. So instead of a generic effect on
+	// (activeActId, activeZoneIndex), we mark the current zone done inside
+	// the autodetect handler right before switching to the new zone.
+	//
+	// `currentZoneRef` mirrors (activeActId, activeZoneIndex) so the autodetect
+	// callback (subscribed long-lived) always reads the freshest current zone
+	// without re-subscribing on every state change.
+	const currentZoneRef = useRef<{ actId: ActId; zoneIndex: number }>({
+		actId: activeActId,
+		zoneIndex: activeZoneIndex,
+	});
 	useEffect(() => {
-		const prev = previousZoneRef.current;
-		const current = { actId: activeActId, zoneIndex: activeZoneIndex };
-
-		// On first render (prev === null) just record without autocompleting.
-		if (prev !== null && (prev.actId !== current.actId || prev.zoneIndex !== current.zoneIndex)) {
-			if (autocompleteOnLeave === "on") {
-				// Mark every task in the PREVIOUS zone as completed (never unmark).
-				const prevAct = guide.find((a) => a.id === prev.actId);
-				if (prevAct) {
-					const prevZone = prevAct.zones[prev.zoneIndex];
-					if (prevZone && prevZone.tasks.length > 0) {
-						setCompleted((c) => {
-							const next = { ...c };
-							for (const task of prevZone.tasks) next[task.id] = true;
-							return next;
-						});
-					}
-				}
-			}
-		}
-
-		previousZoneRef.current = current;
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		currentZoneRef.current = { actId: activeActId, zoneIndex: activeZoneIndex };
 	}, [activeActId, activeZoneIndex]);
+
+	// Mirror autocompleteOnLeave into a ref so the autodetect callback reads
+	// the current toggle value without forcing the subscription to refresh
+	// (and dropping events) every time the setting changes.
+	const autocompleteOnLeaveRef = useRef(autocompleteOnLeave);
+	useEffect(() => {
+		autocompleteOnLeaveRef.current = autocompleteOnLeave;
+	}, [autocompleteOnLeave]);
+
+	// Bulk-mark every task in the given zone as complete. Called only from
+	// autodetect transitions; manual nav (Next/Prev/strip clicks) never
+	// triggers this.
+	const autocompleteZone = (actId: ActId, zoneIndex: number) => {
+		const act = guide.find((a) => a.id === actId);
+		if (!act) return;
+		const zone = act.zones[zoneIndex];
+		if (!zone || zone.tasks.length === 0) return;
+		setCompleted((c) => {
+			const next = { ...c };
+			for (const task of zone.tasks) next[task.id] = true;
+			return next;
+		});
+	};
 
 	// One-shot initial-position default: if the user's first session has no
 	// saved zone-by-act, jump to the first uncompleted zone. Runs ONCE per
@@ -346,10 +355,21 @@ function App() {
 		return () => clearTimeout(id);
 	}, [pendingUnmapped]);
 
+	// Switch zone in response to an *autodetect* event. Before switching,
+	// autocomplete the zone we were on (if the user has the setting enabled
+	// and the new zone is actually different from the current one). Manual
+	// nav (Next/Prev/strip/tab) doesn't go through this path.
 	const switchToZoneByName = (name: string) => {
 		const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 		const hit = zoneIndex.get(normalize(name));
 		if (!hit) return false; // hideout, side area, etc. — silently ignore
+
+		const current = currentZoneRef.current;
+		const isActualChange = current.actId !== hit.actId || current.zoneIndex !== hit.zoneIndex;
+		if (isActualChange && autocompleteOnLeaveRef.current === "on") {
+			autocompleteZone(current.actId, current.zoneIndex);
+		}
+
 		setActiveActId(hit.actId);
 		setActiveZoneByAct((prev) => ({ ...prev, [hit.actId]: hit.zoneIndex }));
 		return true;
