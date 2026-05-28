@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+
 type Props = {
 	activeIndex: number;
 	totalZones: number;
@@ -10,12 +12,36 @@ type Props = {
 };
 
 export default function ZoneNav({ activeIndex, totalZones, isZoneDone, onPrev, onNext, onMarkDone, onCatchUp, currentZoneName }: Props) {
+	const [confirming, setConfirming] = useState(false);
+	const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	function clearConfirmTimer() {
+		if (confirmTimerRef.current) {
+			clearTimeout(confirmTimerRef.current);
+			confirmTimerRef.current = null;
+		}
+	}
+
 	function handleCatchUp(e: React.MouseEvent<HTMLButtonElement>) {
 		e.currentTarget.blur();
-		const target = currentZoneName ? ` "${currentZoneName}"` : "";
-		if (!confirm(`Mark every task in every zone BEFORE${target} as complete? Useful when you start the overlay mid-campaign.`)) return;
+		if (!confirming) {
+			setConfirming(true);
+			clearConfirmTimer();
+			// Revert if the user doesn't confirm within 3 s.
+			confirmTimerRef.current = setTimeout(() => setConfirming(false), 3000);
+			return;
+		}
+		clearConfirmTimer();
+		setConfirming(false);
 		onCatchUp();
 	}
+
+	const catchUpLabel = confirming ? "Sure?" : "⇤ Catch up";
+	const catchUpTitle = confirming
+		? "Click again to confirm"
+		: currentZoneName
+			? `Mark every task in every zone before "${currentZoneName}" as complete`
+			: "Mark every task in every zone before this one as complete";
 
 	return (
 		<div className="zoneNav">
@@ -28,11 +54,11 @@ export default function ZoneNav({ activeIndex, totalZones, isZoneDone, onPrev, o
 			</button>
 
 			<button
-				className="zoneNavBtn zoneNavBtn--catchup"
+				className={`zoneNavBtn zoneNavBtn--catchup ${confirming ? "zoneNavBtn--confirming" : ""}`}
 				onClick={handleCatchUp}
-				title="Mark every task in every zone before this one as complete"
+				title={catchUpTitle}
 			>
-				⇤ Catch up
+				{catchUpLabel}
 			</button>
 
 			<button

@@ -562,6 +562,12 @@ textarea:focus-visible {
 	color: var(--text-gold);
 }
 
+.zoneNavBtn--confirming {
+	background: rgba(216, 155, 75, 0.22);
+	border-color: var(--accent-bronze);
+	color: var(--text-gold-bright);
+}
+
 /* ── Empty state ──────────────────────────────────────────── */
 .emptyState {
 	display: flex;
