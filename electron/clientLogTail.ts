@@ -8,23 +8,92 @@ const ZONE_RE = /You have entered ([^.\r\n]+?)\./;
 const GEN_RE  = /Generating level \d+ area "([^"]+)"/;
 
 // PoE2 internal area IDs → display names.
-// Only entries we have *verified* from real Client.txt observations are
-// kept here. Speculative guesses were removed because a wrong mapping
-// actively yanks the overlay to the wrong zone, which is worse than no
-// switch. The renderer maintains a learned map (built from observed
-// "unmapped" events paired with the user's manual zone clicks) that
-// fills in everything else over time.
+// Sourced from poe2db.tw (campaign WorldAreas pages) — every entry below
+// was extracted from poe2db's "Id: <id>" field on the matching area page.
+// Display names match the zone.name strings in src/data/acts/*.ts exactly
+// so the renderer's zoneLookup index hits cleanly.
+//
+// Side-zones the campaign-guide doesn't track on their own (Mud Burrow,
+// Root Hollow, Mausoleum of the Praetor, Tomb of the Consort, ...) map
+// to their PARENT campaign zone so the overlay stays put when the player
+// ducks into a side area. The runtime learned map in the renderer
+// overrides anything here.
 const INTERNAL_TO_DISPLAY: Record<string, string> = {
-	// Act 1 — verified
+	// ── Act 1 ────────────────────────────────────────────────────────────
 	G1_town: "Clearfell Encampment",
+	G1_1: "Riverbank",
 	G1_2: "Clearfell",
-	// Town IDs across acts — each act has one town with a uniquely
-	// identifiable name, so these are reliable even without log evidence.
+	G1_3: "Clearfell",                  // Mud Burrow — side zone of Clearfell
+	G1_4: "The Grelwood",
+	G1_5: "The Red Vale",
+	G1_6: "Grim Tangle",
+	G1_7: "Cemetery of the Eternals",
+	G1_8: "Cemetery of the Eternals",   // Mausoleum of the Praetor — sub-area
+	G1_9: "Cemetery of the Eternals",   // Tomb of the Consort — sub-area
+	G1_10: "The Grelwood",              // Root Hollow — Brambleghast side zone
+	G1_11: "Hunting Grounds",
+	G1_12: "Freythorn",
+	G1_13_1: "Ogham Farmlands",
+	G1_13_2: "Ogham Village",
+	G1_14: "Manor Ramparts",
+	G1_15: "Ogham Manor",
+	// ── Act 2 ────────────────────────────────────────────────────────────
 	G2_town: "The Ardura Caravan",
+	G2_1: "Vastiri Outskirts",
+	G2_2: "Traitor's Passage",
+	G2_3: "The Halani Gates",
+	G2_4_1: "Keth",
+	G2_4_2: "The Lost City",
+	G2_4_3: "Buried Shrines",
+	G2_5_1: "Mastodon Badlands",
+	G2_5_2: "The Bone Pits",
+	G2_6: "Valley of the Titans",
+	G2_7: "The Titan Grotto",
+	G2_8: "Deshar",
+	G2_9_1: "Path of Mourning",
+	G2_9_2: "The Spires of Deshar",
+	G2_10_1: "Mawdun Quarry",
+	G2_10_2: "Mawdun Mine",
+	G2_11: "The Dreadnought",            // The Dreadnought's Wake — preamble
+	G2_12_1: "The Dreadnought",
+	G2_12_2: "The Dreadnought",          // Dreadnought Vanguard (legacy 0.4 area)
+	G2_13: "Trial of Sekhemas",
+	// ── Act 3 ────────────────────────────────────────────────────────────
 	G3_town: "Ziggurat Encampment",
-	G4_town: "Kingsmarch",
-	// Act 3 — verified
+	G3_1: "Sandswept Marsh",
 	G3_2_1: "Infested Barrens",
+	G3_2_2: "The Matlan Waterways",
+	G3_3: "Jungle Ruins",
+	G3_4: "The Venom Crypts",
+	G3_5: "Chimeral Wetlands",
+	G3_6_1: "Jiquani's Machinarium",
+	G3_6_2: "Jiquani's Sanctum",
+	G3_7: "Azak Bog",
+	G3_8: "The Drowned City",
+	G3_9: "The Molten Vault",
+	G3_10_Airlock: "Trial of Chaos",
+	G3_11: "Apex of Filth",
+	G3_12: "Temple of Kopec",
+	G3_14: "Utzaal",
+	G3_16: "Aggorat",
+	G3_17: "The Black Chambers",
+	// ── Act 4 ────────────────────────────────────────────────────────────
+	G4_town: "Kingsmarch",
+	G4_1_1: "Isle of Kin",
+	G4_1_2: "Volcanic Warrens",
+	G4_2_1: "Kedge Bay",
+	G4_2_2: "Journey's End",
+	G4_3_1: "Whakapanu Island",
+	G4_3_2: "Singing Caverns",
+	G4_4_1: "Eye of Hinekora",
+	G4_4_2: "Halls of the Dead",
+	G4_4_3: "Trial of the Ancestors",
+	G4_5_1: "Abandoned Prison",
+	G4_5_2: "Solitary Confinement",
+	G4_7: "Shrike Island",
+	G4_8a: "Arastas",
+	G4_10: "The Excavation",
+	G4_11_1a: "Ngakanu",
 };
 
 export function createClientLogTail(getPath: () => string | null, win: BrowserWindow) {
