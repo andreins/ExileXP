@@ -1,0 +1,21 @@
+# Normalize text-file line endings to LF in the repo and on checkout
+# regardless of platform / core.autocrlf setting. Prevents the
+# "modified" phantom diffs you get when one collaborator works on
+# Windows and another on Linux/WSL.
+
+* text=auto eol=lf
+
+# Explicit binary safeguards (text=auto usually catches these by
+# content sniffing but be defensive about anything that's truly bytes)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.exe binary
+*.dll binary
