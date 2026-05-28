@@ -6,6 +6,7 @@ type Props = {
 	zone: ZoneGuide;
 	completed: Record<string, boolean>;
 	onToggleTask: (taskId: string) => void;
+	autocompleteOnLeave: "on" | "off";
 };
 
 const TAG_LABELS: Record<string, string> = {
@@ -16,7 +17,7 @@ const TAG_LABELS: Record<string, string> = {
 	"boss-zone": "Boss",
 };
 
-export default function ZoneCard({ zone, completed, onToggleTask }: Props) {
+export default function ZoneCard({ zone, completed, onToggleTask, autocompleteOnLeave }: Props) {
 	return (
 		<section className="zoneCard">
 			<header className="zoneHeader">
@@ -55,6 +56,7 @@ export default function ZoneCard({ zone, completed, onToggleTask }: Props) {
 								task={task}
 								done={Boolean(completed[task.id])}
 								onToggle={() => onToggleTask(task.id)}
+								autocompleteOnLeave={autocompleteOnLeave}
 							/>
 						))
 				}

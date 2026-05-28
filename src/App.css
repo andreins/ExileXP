@@ -435,6 +435,25 @@ textarea:focus-visible {
 	font-weight: 700;
 }
 
+.checkbox--bullet {
+	border-color: transparent;
+	background: transparent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.checkbox--bullet:hover {
+	border-color: var(--accent-bronze);
+}
+
+.checkbox__bullet {
+	font-size: 16px;
+	line-height: 1;
+	color: var(--text-muted);
+	display: block;
+}
+
 .taskText {
 	flex: 1;
 }

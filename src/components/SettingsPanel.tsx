@@ -14,6 +14,7 @@ type CharacterRecord = { class: ProfileId; createdAt: number };
 type Props = {
 	profile: ProfileId;
 	autodetect: "on" | "off";
+	autocompleteOnLeave: "on" | "off";
 	clientLogPath: string;
 	defaultClientLogPath: string;
 	lastDetectedZone: { name: string; at: number; unmapped?: boolean } | null;
@@ -25,6 +26,7 @@ type Props = {
 	onCharacterChange: (name: string) => void;
 	onDeleteCharacter: (name: string) => void;
 	onAutodetectChange: (v: "on" | "off") => void;
+	onAutocompleteOnLeaveChange: (v: "on" | "off") => void;
 	onClientLogPathChange: (p: string) => void;
 	onFocusTrackingChange: (v: "on" | "off") => void;
 	onDeleteLearned: (raw: string) => void;
@@ -36,6 +38,7 @@ type Props = {
 export default function SettingsPanel({
 	profile,
 	autodetect,
+	autocompleteOnLeave,
 	clientLogPath,
 	defaultClientLogPath,
 	lastDetectedZone,
@@ -47,6 +50,7 @@ export default function SettingsPanel({
 	onCharacterChange,
 	onDeleteCharacter,
 	onAutodetectChange,
+	onAutocompleteOnLeaveChange,
 	onClientLogPathChange,
 	onFocusTrackingChange,
 	onDeleteLearned,
@@ -312,6 +316,20 @@ export default function SettingsPanel({
 					/>
 					<span className="settingsLabel">Only show overlay when Path of Exile 2 is focused</span>
 				</label>
+				<label className="settingsCheckLabel">
+					<input
+						type="checkbox"
+						className="settingsCheckbox"
+						checked={autocompleteOnLeave === "on"}
+						onChange={(e) => onAutocompleteOnLeaveChange(e.target.checked ? "on" : "off")}
+					/>
+					<span className="settingsLabel">Auto-complete previous zone when entering a new one</span>
+				</label>
+				{autocompleteOnLeave === "on" && (
+					<span className="settingsMuted">
+						Treats the overlay like a read-only progress tracker. The Complete button still works for manual control.
+					</span>
+				)}
 				{lastDetectedZone ? (
 					lastDetectedZone.unmapped ? (
 						<span className="settingsMuted">

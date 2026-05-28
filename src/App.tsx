@@ -128,6 +128,11 @@ function App() {
 		return saved === "off" ? "off" : "on";
 	});
 
+	const [autocompleteOnLeave, setAutocompleteOnLeave] = useState<"on" | "off">(() => {
+		const saved = localStorage.getItem("poe2-overlay-autocomplete-on-leave");
+		return saved === "off" ? "off" : "on"; // default on
+	});
+
 	// ── Client log path ───────────────────────────────────────────────────
 	const [clientLogPath, setClientLogPath] = useState<string>(() => {
 		return localStorage.getItem("poe2-overlay-client-log-path") ?? "";
@@ -192,6 +197,10 @@ function App() {
 	}, [autodetect]);
 
 	useEffect(() => {
+		localStorage.setItem("poe2-overlay-autocomplete-on-leave", autocompleteOnLeave);
+	}, [autocompleteOnLeave]);
+
+	useEffect(() => {
 		if (clientLogPath) {
 			localStorage.setItem("poe2-overlay-client-log-path", clientLogPath);
 		} else {
@@ -234,6 +243,38 @@ function App() {
 			if (p) setDefaultClientLogPath(p);
 		});
 	}, []);
+
+	// ── Autocomplete on zone leave ────────────────────────────────────────
+	// Track the previous (actId, zoneIndex) so we can mark it complete when
+	// the user navigates away. We use a ref (not state) to avoid stale-closure
+	// issues and to prevent triggering the effect itself on every update.
+	const previousZoneRef = useRef<{ actId: ActId; zoneIndex: number } | null>(null);
+
+	useEffect(() => {
+		const prev = previousZoneRef.current;
+		const current = { actId: activeActId, zoneIndex: activeZoneIndex };
+
+		// On first render (prev === null) just record without autocompleting.
+		if (prev !== null && (prev.actId !== current.actId || prev.zoneIndex !== current.zoneIndex)) {
+			if (autocompleteOnLeave === "on") {
+				// Mark every task in the PREVIOUS zone as completed (never unmark).
+				const prevAct = guide.find((a) => a.id === prev.actId);
+				if (prevAct) {
+					const prevZone = prevAct.zones[prev.zoneIndex];
+					if (prevZone && prevZone.tasks.length > 0) {
+						setCompleted((c) => {
+							const next = { ...c };
+							for (const task of prevZone.tasks) next[task.id] = true;
+							return next;
+						});
+					}
+				}
+			}
+		}
+
+		previousZoneRef.current = current;
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeActId, activeZoneIndex]);
 
 	// One-shot initial-position default: if the user's first session has no
 	// saved zone-by-act, jump to the first uncompleted zone. Runs ONCE per
@@ -579,6 +620,7 @@ function App() {
 				<SettingsPanel
 					profile={profile}
 					autodetect={autodetect}
+					autocompleteOnLeave={autocompleteOnLeave}
 					clientLogPath={clientLogPath}
 					defaultClientLogPath={defaultClientLogPath}
 					lastDetectedZone={lastDetectedZone}
@@ -590,6 +632,7 @@ function App() {
 					onCharacterChange={handleCharacterChange}
 					onDeleteCharacter={handleDeleteCharacter}
 					onAutodetectChange={setAutodetect}
+					onAutocompleteOnLeaveChange={setAutocompleteOnLeave}
 					onClientLogPathChange={handleClientLogPathChange}
 					onFocusTrackingChange={handleFocusTrackingChange}
 					onDeleteLearned={deleteLearned}
@@ -607,7 +650,7 @@ function App() {
 
 					<main className="guideMain">
 						{activeZone ? (
-							<ZoneCard zone={activeZone} completed={completed} onToggleTask={toggleTask} />
+							<ZoneCard zone={activeZone} completed={completed} onToggleTask={toggleTask} autocompleteOnLeave={autocompleteOnLeave} />
 						) : (
 							<div className="emptyState">
 								<div className="emptyTitle">{activeAct.label}</div>
