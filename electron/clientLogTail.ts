@@ -1,8 +1,47 @@
 import fs from "node:fs";
 import { BrowserWindow } from "electron";
 
-const ZONE_RE = /You have entered ([^.]+?)\.$/;
+// Loosened — matches "You have entered X." anywhere on a line, not just at
+// end-of-string (PoE2 0.5 lines sometimes have trailing whitespace, BOMs, or
+// embedded control sequences that broke the previous `\.$` anchor).
+const ZONE_RE = /You have entered ([^.\r\n]+?)\./;
 const GEN_RE  = /Generating level \d+ area "([^"]+)"/;
+
+// PoE2 internal area IDs → display names.
+// PoE2 0.5's `Generating level X area "G1_2"` lines use internal IDs that
+// don't match our zone-name lookup. The catch-up scan finds the `You have
+// entered <DisplayName>.` line and that maps cleanly; live transitions
+// sometimes write only the `Generating level` line, leaving the overlay
+// stuck. This table is the fallback.
+//
+// Observed entries are marked. Best-guesses are flagged — extend or correct
+// as more internal IDs surface in production logs.
+const INTERNAL_TO_DISPLAY: Record<string, string> = {
+	// Act 1 — observed: G1_town, G1_2
+	G1_town: "Clearfell Encampment",
+	G1_1: "Riverbank",
+	G1_2: "Clearfell",
+	G1_3: "The Grelwood",
+	G1_4: "The Red Vale",
+	G1_5: "Grim Tangle",
+	G1_6: "Cemetery of the Eternals",
+	G1_7: "Hunting Grounds",
+	G1_8: "Freythorn",
+	G1_9: "Ogham Farmlands",
+	G1_10: "Ogham Village",
+	G1_11: "Manor Ramparts",
+	G1_12: "Ogham Manor",
+	// Act 2
+	G2_town: "The Ardura Caravan",
+	// Act 3
+	G3_town: "Ziggurat Encampment",
+	// Act 4
+	G4_town: "Kingsmarch",
+};
+
+function resolveZoneName(raw: string): string {
+	return INTERNAL_TO_DISPLAY[raw] ?? raw;
+}
 
 export function createClientLogTail(getPath: () => string | null, win: BrowserWindow) {
 	let watching: { path: string; offset: number } | null = null;
@@ -21,9 +60,10 @@ export function createClientLogTail(getPath: () => string | null, win: BrowserWi
 		const stat = fs.statSync(p);
 		console.log("[clientLogTail] watching", p, "size=" + stat.size);
 
-		// Catch-up: scan the last ~64 KB of the log for the most recent
-		// "You have entered X." line so the overlay snaps to the player's
-		// current zone even if PoE2 was already running when we launched.
+		// Catch-up: scan the last ~64 KB of the log for the most recent zone
+		// entry so the overlay snaps to the player's current zone even if
+		// PoE2 was already running when we launched. Prefer a display-name
+		// match (ZONE_RE) over an internal-ID match (GEN_RE) when both exist.
 		const scanSize = Math.min(stat.size, 64 * 1024);
 		if (scanSize > 0) {
 			try {
@@ -33,14 +73,25 @@ export function createClientLogTail(getPath: () => string | null, win: BrowserWi
 				fs.readSync(fd, buf, 0, scanSize, startOffset);
 				fs.closeSync(fd);
 				const lines = buf.toString("utf8").split(/\r?\n/);
+				let fallback: string | null = null;
 				for (let i = lines.length - 1; i >= 0; i--) {
-					const m = lines[i].match(ZONE_RE);
-					if (m) {
-						const zone = m[1].trim();
+					const zm = lines[i].match(ZONE_RE);
+					if (zm) {
+						const zone = zm[1].trim();
 						console.log("[clientLogTail] catch-up: emitting most-recent zone =", zone);
 						win.webContents.send("overlay:zone-entered", zone);
+						fallback = null;
 						break;
 					}
+					if (!fallback) {
+						const gm = lines[i].match(GEN_RE);
+						if (gm) fallback = gm[1].trim();
+					}
+				}
+				if (fallback) {
+					const resolved = resolveZoneName(fallback);
+					console.log("[clientLogTail] catch-up: emitting internal-id zone =", fallback, "→", resolved);
+					win.webContents.send("overlay:zone-entered", resolved);
 				}
 			} catch (e) {
 				console.warn("[clientLogTail] catch-up scan failed:", e);
@@ -59,11 +110,23 @@ export function createClientLogTail(getPath: () => string | null, win: BrowserWi
 			fs.closeSync(fd);
 			watching.offset = curr.size;
 			for (const line of buf.toString("utf8").split(/\r?\n/)) {
-				const m = line.match(ZONE_RE) ?? line.match(GEN_RE);
-				if (m) {
-					const zone = m[1].trim();
-					console.log("[clientLogTail] zone entered =", zone);
+				const zm = line.match(ZONE_RE);
+				if (zm) {
+					const zone = zm[1].trim();
+					console.log("[clientLogTail] zone entered (display) =", zone);
 					win.webContents.send("overlay:zone-entered", zone);
+					continue;
+				}
+				const gm = line.match(GEN_RE);
+				if (gm) {
+					const raw = gm[1].trim();
+					const resolved = resolveZoneName(raw);
+					if (resolved !== raw) {
+						console.log("[clientLogTail] zone entered (internal) =", raw, "→", resolved);
+					} else {
+						console.log("[clientLogTail] zone entered (unmapped internal) =", raw);
+					}
+					win.webContents.send("overlay:zone-entered", resolved);
 				}
 			}
 		});

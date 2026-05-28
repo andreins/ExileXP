@@ -100,6 +100,11 @@ function App() {
 	);
 
 	// ── Autodetect ───────────────────────────────────────────────────────
+	const [focusTracking, setFocusTracking] = useState<"on" | "off">(() => {
+		const saved = localStorage.getItem("poe2-overlay-focus-track");
+		return saved === "off" ? "off" : "on"; // default on
+	});
+
 	const [autodetect, setAutodetect] = useState<"on" | "off">(() => {
 		const saved = localStorage.getItem("poe2-overlay-autodetect");
 		return saved === "off" ? "off" : "on";
@@ -316,6 +321,18 @@ function App() {
 		await window.overlay?.setClientLogPath(p || null);
 	};
 
+	const handleFocusTrackingChange = (next: "on" | "off") => {
+		setFocusTracking(next);
+		localStorage.setItem("poe2-overlay-focus-track", next);
+		window.overlay?.setFocusTracking(next === "on");
+	};
+
+	// Push initial focus-tracking state to main on mount.
+	useEffect(() => {
+		window.overlay?.setFocusTracking(focusTracking === "on");
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
 	// Bulk-mark every task in every zone BEFORE the current zone as completed.
 	// Lets a user who's already mid-campaign record their existing progress in
 	// one click instead of ticking each zone manually.
@@ -359,27 +376,30 @@ function App() {
 	return (
 		<div className="app" ref={appRef}>
 			<OverlayHeader
+				profile={profile}
 				clickThrough={clickThrough}
 				onToggleClickThrough={toggleClickThrough}
 				settingsOpen={settingsOpen}
 				onOpenSettings={() => setSettingsOpen((o) => !o)}
+				onCloseApp={() => window.overlay?.closeApp()}
 			/>
-			{settingsOpen && (
+			{settingsOpen ? (
 				<SettingsPanel
 					profile={profile}
 					autodetect={autodetect}
 					clientLogPath={clientLogPath}
 					defaultClientLogPath={defaultClientLogPath}
-					currentZoneName={activeZone?.name ?? null}
 					lastDetectedZone={lastDetectedZone}
+					focusTracking={focusTracking}
 					onProfileChange={handleProfileChange}
 					onAutodetectChange={setAutodetect}
 					onClientLogPathChange={handleClientLogPathChange}
-					onCatchUp={catchUpToHere}
+					onFocusTrackingChange={handleFocusTrackingChange}
 					onResetProfile={handleResetProfile}
 					onResetAll={handleResetAll}
 				/>
-			)}
+			) : (
+				<>
 			<ActTabs acts={guide} activeActId={activeActId} onSelectAct={setActiveActId} />
 
 			{!gemsOpen && (
@@ -405,12 +425,16 @@ function App() {
 							onPrev={() => setZoneIndex(activeZoneIndex - 1)}
 							onNext={() => setZoneIndex(activeZoneIndex + 1)}
 							onMarkDone={markZoneDone}
+							onCatchUp={catchUpToHere}
+							currentZoneName={activeZone.name}
 						/>
 					)}
 				</>
 			)}
 
 			<GemsPanel act={activeActId} profile={profile} open={gemsOpen} onToggle={toggleGems} />
+				</>
+			)}
 		</div>
 	);
 }

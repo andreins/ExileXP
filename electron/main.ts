@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClientLogTail } from "./clientLogTail.js";
+import { createFocusWatcher } from "./focusWatcher.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +104,9 @@ app.whenReady().then(() => {
 	const logTail = createClientLogTail(getEffectiveClientLogPath, win!);
 	logTail.start();
 
+	// Foreground-process watcher (Windows only) — toggled by the renderer.
+	const focusWatcher = createFocusWatcher(() => win);
+
 	globalShortcut.register("CommandOrControl+Shift+X", () => {
 		if (!win) return;
 
@@ -171,6 +175,15 @@ app.whenReady().then(() => {
 		return defaultClientLogPath;
 	});
 
+	ipcMain.on("overlay:set-focus-tracking", (_event, enabled: boolean) => {
+		focusWatcher.setEnabled(Boolean(enabled));
+	});
+
+	ipcMain.on("overlay:close-app", () => {
+		focusWatcher.dispose();
+		app.quit();
+	});
+
 	// Open a folder picker. User selects a PoE2 install folder (or its parent or `logs/`)
 	// and we derive Client.txt from there. Returns the resolved Client.txt path on success,
 	// the string "not-found" if a folder was chosen but Client.txt couldn't be located,
@@ -206,4 +219,10 @@ app.on("window-all-closed", () => {
 
 app.on("will-quit", () => {
 	globalShortcut.unregisterAll();
+});
+
+app.on("before-quit", () => {
+	// Make sure the focus-watcher child process is killed even if the user
+	// closes the window via taskbar / Alt-F4 rather than the close button.
+	// (focusWatcher.dispose() is also called from the close-app IPC.)
 });

@@ -14,12 +14,12 @@ type Props = {
 	autodetect: "on" | "off";
 	clientLogPath: string;
 	defaultClientLogPath: string;
-	currentZoneName: string | null;
 	lastDetectedZone: { name: string; at: number } | null;
+	focusTracking: "on" | "off";
 	onProfileChange: (p: ProfileId) => void;
 	onAutodetectChange: (v: "on" | "off") => void;
 	onClientLogPathChange: (p: string) => void;
-	onCatchUp: () => void;
+	onFocusTrackingChange: (v: "on" | "off") => void;
 	onResetProfile: () => void;
 	onResetAll: () => void;
 };
@@ -29,12 +29,12 @@ export default function SettingsPanel({
 	autodetect,
 	clientLogPath,
 	defaultClientLogPath,
-	currentZoneName,
 	lastDetectedZone,
+	focusTracking,
 	onProfileChange,
 	onAutodetectChange,
 	onClientLogPathChange,
-	onCatchUp,
+	onFocusTrackingChange,
 	onResetProfile,
 	onResetAll,
 }: Props) {
@@ -162,13 +162,6 @@ export default function SettingsPanel({
 		}
 	}
 
-	function handleCatchUp() {
-		const target = currentZoneName ? ` "${currentZoneName}"` : "";
-		if (!confirm(`Mark every task in every zone BEFORE${target} as complete? This is the quick way to record existing progress when you start using the overlay mid-campaign.`)) return;
-		onCatchUp();
-		showToast("Caught up to current zone");
-	}
-
 	function handleResetProfile() {
 		if (!confirm(`Reset all progress for the ${profile} profile?`)) return;
 		onResetProfile();
@@ -216,6 +209,15 @@ export default function SettingsPanel({
 						onChange={(e) => onAutodetectChange(e.target.checked ? "on" : "off")}
 					/>
 					<span className="settingsLabel">Autodetect zone</span>
+				</label>
+				<label className="settingsCheckLabel">
+					<input
+						type="checkbox"
+						className="settingsCheckbox"
+						checked={focusTracking === "on"}
+						onChange={(e) => onFocusTrackingChange(e.target.checked ? "on" : "off")}
+					/>
+					<span className="settingsLabel">Only show overlay when Path of Exile 2 is focused</span>
 				</label>
 				{lastDetectedZone ? (
 					<span className="settingsMuted">
@@ -280,19 +282,6 @@ export default function SettingsPanel({
 				</button>
 			</div>
 
-			{/* Catch up to current zone */}
-			<div className="settingsDivider" />
-			<div className="settingsRow settingsRow--column">
-				<button className="settingsActionBtn settingsActionBtn--full" onClick={handleCatchUp}>
-					Mark all tasks done up to current zone
-				</button>
-				<span className="settingsMuted">
-					{currentZoneName
-						? `Marks every task before "${currentZoneName}" as complete. Useful when you start the overlay mid-campaign.`
-						: "Marks every task before the active zone as complete."}
-				</span>
-			</div>
-
 			{/* Reset */}
 			<div className="settingsDivider" />
 			<div className="settingsRow settingsRow--spaced">
@@ -306,9 +295,9 @@ export default function SettingsPanel({
 
 			{/* Credits */}
 			<div className="settingsDivider" />
-			<div className="settingsRow settingsRow--column">
+			<div className="settingsRow settingsRow--column settingsCredits">
 				<span className="settingsLabel">Credits</span>
-				<span className="settingsMuted">
+				<span className="settingsCredits__line">
 					Monk leveling guide by{" "}
 					<a
 						className="settingsLink"
@@ -320,7 +309,7 @@ export default function SettingsPanel({
 					</a>
 					.
 				</span>
-				<span className="settingsMuted">
+				<span className="settingsCredits__line">
 					Base leveling guide derived from{" "}
 					<a
 						className="settingsLink"

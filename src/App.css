@@ -1,3 +1,21 @@
+/* ── Global ───────────────────────────────────────────────── */
+/* Suppress sticky focus rings after mouse clicks. Keyboard navigation
+   still gets a visible outline via :focus-visible. */
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+label:focus {
+	outline: none;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+	outline: 1px solid var(--accent-bronze, #d89b4b);
+	outline-offset: 1px;
+}
+
 /* ── Design tokens ────────────────────────────────────────── */
 :root {
 	--bg-overlay:     rgba(18, 13, 8, 0.92);
@@ -536,6 +554,14 @@
 	color: var(--text-muted);
 }
 
+.zoneNavBtn--catchup {
+	color: var(--text-muted);
+}
+
+.zoneNavBtn--catchup:hover:not(:disabled) {
+	color: var(--text-gold);
+}
+
 /* ── Empty state ──────────────────────────────────────────── */
 .emptyState {
 	display: flex;
@@ -571,6 +597,51 @@
 	align-items: center;
 	gap: 4px;
 	-webkit-app-region: no-drag;
+}
+
+/* ── Guide link in header ─────────────────────────────────── */
+.overlayGuideLink {
+	color: var(--text-muted);
+	font-size: var(--font-xs);
+	text-decoration: none;
+	padding: 2px 6px;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	transition: color 0.15s, background 0.15s;
+}
+
+.overlayGuideLink:hover {
+	color: var(--text-gold);
+	background: rgba(201, 160, 98, 0.08);
+}
+
+/* ── Close-app button ─────────────────────────────────────── */
+.closeAppBtn {
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--text-muted);
+	width: 24px;
+	height: 24px;
+	border-radius: var(--radius-sm);
+	font-size: var(--font-sm);
+	cursor: pointer;
+	transition: color 0.15s, background 0.15s, border-color 0.15s;
+	display: grid;
+	place-items: center;
+	-webkit-app-region: no-drag;
+}
+
+.closeAppBtn:hover {
+	color: #f5b3a0;
+	background: rgba(200, 90, 70, 0.18);
+	border-color: rgba(200, 90, 70, 0.45);
+}
+
+/* ── Credits in Settings ──────────────────────────────────── */
+.settingsCredits__line {
+	font-size: var(--font-sm);
+	color: var(--text-body);
+	line-height: 1.45;
 }
 
 /* ── Settings gear button ─────────────────────────────────── */
