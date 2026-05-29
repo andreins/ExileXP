@@ -1,7 +1,7 @@
 {
   "name": "exilexp",
   "productName": "ExileXP",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Path of Exile 2 leveling overlay — class profiles, skill gem guide, Client.txt zone autodetect.",
   "author": {
     "name": "andreins"
@@ -68,13 +68,18 @@
       "output": "release"
     },
     "extraResources": [
-      { "from": "build/icon.ico", "to": "icon.ico" }
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      }
     ],
     "win": {
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.ico",
