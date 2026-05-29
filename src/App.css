@@ -1351,67 +1351,31 @@ textarea:focus-visible {
 	line-height: 1.45;
 }
 
-/* ── Shop regex bar ─────────────────────────────────────── */
-/* One line under ActTabs showing the act's vendor-search regex with a
-   copy button. Selectable readonly input + "Copy" / "Copied" button. */
-.shopRegexBar {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 3px 8px 3px 10px;
-	background: rgba(18, 13, 8, 0.55);
-	border-bottom: 1px solid var(--border-subtle);
-	flex-shrink: 0;
+/* ── Shop regex button (header) ─────────────────────────── */
+/* Slim "Copy Regex" button sitting next to the Guide link. Flashes
+   "Done" for ~1.2 s after a successful clipboard write. Sized to match
+   the Guide link / SettingsButton row so the header stays one line. */
+.shopRegexBtn {
 	-webkit-app-region: no-drag;
-}
-
-.shopRegexBar__label {
-	font-size: var(--font-xs);
-	color: var(--text-muted);
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	font-weight: 600;
-	flex-shrink: 0;
-}
-
-.shopRegexBar__input {
-	flex: 1;
-	min-width: 0;
-	background: transparent;
-	border: none;
-	color: var(--text-body);
-	font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
-	font-size: 10.5px;
-	padding: 2px 0;
-	cursor: text;
-	outline: none;
-}
-
-.shopRegexBar__input::selection {
-	background: var(--accent-bronze-dim);
-	color: var(--text-gold);
-}
-
-.shopRegexBar__copy {
-	flex-shrink: 0;
-	background: rgba(216, 155, 75, 0.12);
+	background: rgba(216, 155, 75, 0.10);
 	border: 1px solid var(--accent-bronze-dim);
 	color: var(--text-gold);
 	font-size: var(--font-xs);
 	font-weight: 600;
 	letter-spacing: 0.04em;
-	padding: 2px 8px;
+	padding: 2px 7px;
 	border-radius: var(--radius-sm);
 	cursor: pointer;
 	transition: background 0.15s, border-color 0.15s, color 0.15s;
+	white-space: nowrap;
 }
 
-.shopRegexBar__copy:hover {
-	background: rgba(216, 155, 75, 0.22);
+.shopRegexBtn:hover {
+	background: rgba(216, 155, 75, 0.20);
 	border-color: var(--accent-bronze);
 }
 
-.shopRegexBar__copy--ok {
+.shopRegexBtn--ok {
 	background: rgba(120, 180, 110, 0.18);
 	border-color: rgba(120, 180, 110, 0.6);
 	color: #b9e0a8;

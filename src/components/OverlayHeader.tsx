@@ -1,9 +1,11 @@
 import { useRef, useState } from "react";
-import type { ProfileId } from "../types/guide";
+import type { ActId, ProfileId } from "../types/guide";
 import SettingsButton from "./SettingsButton";
+import { ACT_SHOP_REGEX } from "../data/shopRegex";
 
 type Props = {
 	profile: ProfileId;
+	activeActId: ActId;
 	clickThrough: boolean;
 	onToggleClickThrough: () => void;
 	settingsOpen: boolean;
@@ -19,14 +21,48 @@ const GUIDE_URLS: Record<ProfileId, { url: string; label: string }> = {
 	},
 };
 
-export default function OverlayHeader({ profile, clickThrough, onToggleClickThrough, settingsOpen, onOpenSettings, onCloseApp }: Props) {
+export default function OverlayHeader({ profile, activeActId, clickThrough, onToggleClickThrough, settingsOpen, onOpenSettings, onCloseApp }: Props) {
 	const guide = GUIDE_URLS[profile];
+	const actRegex = ACT_SHOP_REGEX[activeActId];
 
 	// Two-click confirmation on the close button. First click → label
 	// becomes "?" and stays for 3 s. Second click within that window
 	// actually quits. Mirrors the Catch-up button pattern in ZoneNav.
 	const [closeConfirming, setCloseConfirming] = useState(false);
 	const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// "Copy Regex" button: flashes "Done" for 1.2 s after a successful
+	// clipboard write. Falls back to a hidden textarea + execCommand when
+	// navigator.clipboard isn't reachable (some Electron contexts).
+	const [regexCopied, setRegexCopied] = useState(false);
+	const regexTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	async function handleCopyRegex(e: React.MouseEvent<HTMLButtonElement>) {
+		e.currentTarget.blur();
+		if (!actRegex) return;
+		let ok = false;
+		try {
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(actRegex);
+				ok = true;
+			} else {
+				const ta = document.createElement("textarea");
+				ta.value = actRegex;
+				ta.style.position = "fixed";
+				ta.style.opacity = "0";
+				document.body.appendChild(ta);
+				ta.select();
+				ok = document.execCommand("copy");
+				document.body.removeChild(ta);
+			}
+		} catch {
+			ok = false;
+		}
+		if (!ok) return;
+		setRegexCopied(true);
+		if (regexTimerRef.current) clearTimeout(regexTimerRef.current);
+		regexTimerRef.current = setTimeout(() => setRegexCopied(false), 1200);
+	}
 
 	function clearCloseTimer() {
 		if (closeTimerRef.current) {
@@ -81,6 +117,16 @@ export default function OverlayHeader({ profile, clickThrough, onToggleClickThro
 				>
 					Guide ↗
 				</a>
+				{actRegex && (
+					<button
+						className={`shopRegexBtn${regexCopied ? " shopRegexBtn--ok" : ""}`}
+						onClick={handleCopyRegex}
+						title="Copy this act's vendor-search regex to clipboard"
+						data-always-interactive="true"
+					>
+						{regexCopied ? "Done" : "Copy Regex"}
+					</button>
+				)}
 				<SettingsButton open={settingsOpen} onClick={onOpenSettings} />
 				<button
 					className={`clickThroughBtn ${clickThrough ? "clickThroughBtn--locked" : ""}`}

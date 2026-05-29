@@ -10,8 +10,6 @@ import ProgressStrip from "./components/ProgressStrip";
 import ZoneCard from "./components/ZoneCard";
 import ZoneNav from "./components/ZoneNav";
 import GemsPanel from "./components/GemsPanel";
-import ShopRegexBar from "./components/ShopRegexBar";
-import { ACT_SHOP_REGEX } from "./data/shopRegex";
 
 const DEFAULT_CHARACTER_NAME = "Default";
 
@@ -681,6 +679,7 @@ function App() {
 		<div className="app" ref={appRef}>
 			<OverlayHeader
 				profile={profile}
+				activeActId={activeActId}
 				clickThrough={clickThrough}
 				onToggleClickThrough={toggleClickThrough}
 				settingsOpen={settingsOpen}
@@ -733,10 +732,6 @@ function App() {
 			) : (
 				<>
 			<ActTabs acts={guide} activeActId={activeActId} onSelectAct={(id) => { setActiveActId(id); setGemsOpen(false); }} />
-
-			{!gemsOpen && ACT_SHOP_REGEX[activeActId] && (
-				<ShopRegexBar regex={ACT_SHOP_REGEX[activeActId]!} />
-			)}
 
 			{!gemsOpen && (
 				<>
