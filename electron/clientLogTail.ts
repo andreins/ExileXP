@@ -104,7 +104,7 @@ const INTERNAL_TO_DISPLAY: Record<string, string> = {
 };
 
 type TailHooks = {
-	onSceneCleared?: () => void;
+	onSceneCleared?: (opts: { immediate: boolean }) => void;
 	onZoneEntered?: () => void;
 };
 
@@ -138,7 +138,7 @@ export function createClientLogTail(
 				if (SCENE_BLANK.has(scene)) {
 					console.log("[clientLogTail] scene cleared =", scene);
 					win.webContents.send("overlay:scene-cleared", scene);
-					hooks.onSceneCleared?.();
+					hooks.onSceneCleared?.({ immediate: false });
 				} else {
 					console.log("[clientLogTail] scene =", scene);
 					win.webContents.send("overlay:zone-entered", scene);
@@ -198,7 +198,10 @@ export function createClientLogTail(
 						if (SCENE_BLANK.has(scene)) {
 							console.log("[clientLogTail] catch-up: most-recent SCENE is blank →", scene);
 							win.webContents.send("overlay:scene-cleared", scene);
-							hooks.onSceneCleared?.();
+							// Immediate at startup: no grace window — the player
+							// is already at char-select, we shouldn't flash the
+							// overlay on screen for SCENE_HIDE_GRACE_MS first.
+							hooks.onSceneCleared?.({ immediate: true });
 						} else {
 							console.log("[clientLogTail] catch-up: emitting most-recent scene =", scene);
 							win.webContents.send("overlay:zone-entered", scene);

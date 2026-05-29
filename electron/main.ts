@@ -33,6 +33,13 @@ let userHidden = false;
 // the player is at character select / between scenes. Cleared when a real
 // scene name fires next.
 let sceneHidden = false;
+// Pending timer for the "scene cleared → hide window" transition. PoE2
+// emits a blank [SCENE] for a fraction of a second during every zone
+// transition (loading screen) before the new zone name arrives. Hiding
+// immediately would cause a visible blink on every TP. We defer the
+// hide and cancel it if a real zone arrives within the grace window.
+let sceneClearedHideTimer: ReturnType<typeof setTimeout> | null = null;
+const SCENE_HIDE_GRACE_MS = 4000;
 
 // ── Client.txt auto-detection ───────────────────────────────────────────────
 // Cross common drives × common install patterns. Order matters: first match wins.
@@ -272,11 +279,36 @@ app.whenReady().then(() => {
 	// transitions so character select / loading screens hide the overlay
 	// immediately (without waiting for the next 750 ms focus-watcher tick).
 	const logTail = createClientLogTail(getEffectiveClientLogPath, win!, {
-		onSceneCleared: () => {
-			sceneHidden = true;
-			if (win?.isVisible()) win.hide();
+		onSceneCleared: ({ immediate }) => {
+			// Catch-up scan at startup passes immediate=true (player is
+			// already at character-select); hide right away so the overlay
+			// doesn't flash on screen during the grace window. Live events
+			// defer: PoE2 fires a blank SCENE during every zone transition
+			// (loading screen) for ~1-2 s before the new zone name, and
+			// hiding immediately causes a visible flicker on every TP.
+			// We wait SCENE_HIDE_GRACE_MS; if a real zone arrives in that
+			// window, onZoneEntered cancels the pending hide.
+			if (sceneClearedHideTimer) clearTimeout(sceneClearedHideTimer);
+			if (immediate) {
+				sceneClearedHideTimer = null;
+				sceneHidden = true;
+				if (win?.isVisible()) win.hide();
+				return;
+			}
+			sceneClearedHideTimer = setTimeout(() => {
+				sceneClearedHideTimer = null;
+				sceneHidden = true;
+				if (win?.isVisible()) win.hide();
+			}, SCENE_HIDE_GRACE_MS);
 		},
 		onZoneEntered: () => {
+			// Cancel any pending hide from a transient blank-scene that
+			// preceded this real zone — the player has finished loading
+			// into a real area, so we want to stay visible.
+			if (sceneClearedHideTimer) {
+				clearTimeout(sceneClearedHideTimer);
+				sceneClearedHideTimer = null;
+			}
 			sceneHidden = false;
 			// Don't force-show here — focusWatcher's next tick will pick this
 			// up and only show if PoE2 / ExileXP is the foreground window.
